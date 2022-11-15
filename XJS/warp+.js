@@ -1,11 +1,5 @@
-/*
-@author: langkhach
-@QX, Surge, Loon, Scriptable,
-@file: warp++.js 
-@createTime: 210312
-*/
 const $ = API("WARP++", true);
-const manualreferrer = "f24149f8-5e7e-45fe-863d-9f2a63226ff8"; 
+const manualreferrer = "815d47d0-08e1-4aa0-af0a-1f530dbef675"; 
 const autoreferrer = $.read("#referrer");
 
 if (autoreferrer != null) {
