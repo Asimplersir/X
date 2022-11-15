@@ -1,8 +1,3 @@
-/*
-@author: langkhach
-@file: warp++referrerkey.js
-@createTime: 210312
-*/
 const $ = API("WARP++", true);
 
 let url = $request.url;
