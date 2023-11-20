@@ -11,3 +11,7 @@ https://raw.githubusercontent.com/Orz-3/QuantumultX/master/YouTube.conf
 TF
 
 https://raw.githubusercontent.com/NobyDa/Script/master/QuantumultX/TestFlightDownload.conf
+
+
+ChatGPTPlus
+https://raw.githubusercontent.com/yqc007j/QuantumultX/master/ChatGPTPlusCrack.js
