@@ -14,4 +14,5 @@ https://raw.githubusercontent.com/NobyDa/Script/master/QuantumultX/TestFlightDow
 
 
 ChatGPTPlus
+
 https://raw.githubusercontent.com/yqc007j/QuantumultX/master/ChatGPTPlusCrack.js
