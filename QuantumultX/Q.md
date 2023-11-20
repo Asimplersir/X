@@ -6,7 +6,7 @@ https://raw.githubusercontent.com/mymoonyue/QuantumultX/master/Scripts/emby.conf
 
 YouTube广告拦截：
 
-https://raw.githubusercontent.com/Orz-3/QuantumultX/master/YouTube.conf
+https://raw.githubusercontent.com/ddgksf2013/Rewrite/master/AdBlock/YoutubeAds.conf
 
 TF
 
