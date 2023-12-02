@@ -21,7 +21,6 @@ mixin:
       - "www.msftconnecttest.com"
     # 國內域名使用 nameserver 請求
     nameserver:
-      - https://doh.pub/dns-query #腾讯DNS
       - https://dns.alidns.com/dns-query #阿里DNS
     # 國外域名使用 fallback 請求 (没有被污染的DNS)
     fallback:
