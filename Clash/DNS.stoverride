@@ -1,3 +1,6 @@
+name: DNS
+desc: 国内阿里DNS，国外Cloudflare与101DNS
+
 dns:
   enable: true
   ipv6: true
