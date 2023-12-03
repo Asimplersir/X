@@ -1,0 +1,10 @@
+rule-providers:
+  Anti-AD_Domain:
+    type: http
+    behavior: domain
+    url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AdvertisingLite/AdvertisingLite_Domain.yaml"
+    path: ./ruleset/AdvertisingLite_Domain.yaml
+    interval: 86400
+
+rules:
+  - RULE-SET,Anti-AD_Domain,REJECT
