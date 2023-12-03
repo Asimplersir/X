@@ -1,4 +1,4 @@
- name: "ChatGPTPlusCrack"
+name: "ChatGPTPlusCrack"
 desc: "ChatGPTPlusCrack"
 http:
   script:
