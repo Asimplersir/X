@@ -1,1 +1,13 @@
-1
+name: "Apple_Domain"
+desc: "Apple_Domain分流规则"
+
+rule-providers:
+  Apple_Domain:
+    type: http
+    behavior: domain
+    url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple_Domain.yaml"
+    path: ./ruleset/Apple_Domain.yaml
+    interval: 86400
+
+rules:
+  - RULE-SET,Apple_Domain,DIRECT
