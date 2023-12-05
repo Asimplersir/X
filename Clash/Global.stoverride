@@ -17,6 +17,6 @@ rule-providers:
     interval: 86400
 
 rules:
-  - RULE-SET,Global,REJECT
-  - RULE-SET,Global_Domain,REJECT
+  - RULE-SET,Global,Proxy
+  - RULE-SET,Global_Domain,Proxy
 
