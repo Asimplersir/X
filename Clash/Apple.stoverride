@@ -1,5 +1,5 @@
 name: "Apple"
-desc: "Apple规则"
+desc: "Apple分流规则"
 
 rule-providers:
   Apple:
@@ -8,6 +8,13 @@ rule-providers:
     url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.yaml"
     path: ./ruleset/Apple.yaml
     interval: 86400
+  Apple_Domain:
+    type: http
+    behavior: domain
+    url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple_Domain.yaml"
+    path: ./ruleset/Apple_Domain.yaml
+    interval: 86400
 
 rules:
-  - RULE-SET,Apple,DIRECT
+  -  RULE-SET,Apple,DIRECT
+  -  RULE-SET,Apple_Domain,DIRECT
