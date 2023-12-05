@@ -4,7 +4,7 @@ mixin:
     # 监听本地的53端口
     listen: 127.0.0.1:53
     # 禁用 IPV6
-    ipv6: false
+    ipv6: true
     # 使用 fake-ip 模式
     enhanced-mode: fake-ip
     # 使用hosts
