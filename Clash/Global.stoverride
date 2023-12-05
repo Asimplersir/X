@@ -1,5 +1,5 @@
-name: "广告拦截规则"
-desc: "去广告分流规则"
+name: "Global规则"
+desc: "Global分流规则"
 
 rule-providers:
   Global:
