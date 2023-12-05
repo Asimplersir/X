@@ -17,5 +17,5 @@ rule-providers:
     interval: 8640
 
 rules:
-  - RULE-SET,Proxy,DIRECT
-  - RULE-SET,Proxy_Domain,DIRECT
+  - RULE-SET,Proxy,Proxy
+  - RULE-SET,Proxy_Domain,Proxy
