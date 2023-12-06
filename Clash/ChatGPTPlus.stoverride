@@ -3,21 +3,22 @@ desc: "ChatGPTPlusCrack"
 
 http:
 
+  mitm:
+    - "ios.chat.openai.com"
+
   script:
+# > ChatGPT 解锁 Plus 订阅
 
     - match: ^https?:\/\/ios\.chat\.openai\.com\/backend-api\/(accounts\/check\/|models)
       name: "ChatGPTPlusCrack_12"
       type: response
-      timeout: 30
       require-body: true
-      max-size: 3145728
-      binary-mode: false
-
-  mitm:
-    - "ios.chat.openai.com"
+      max-size: -1
+      timeout: 60
 
 script-providers:
   "ChatGPTPlusCrack_12":
     url: https://raw.githubusercontent.com/yqc007/QuantumultX/master/ChatGPTPlusCrack.js
     interval: 86400
+
 
