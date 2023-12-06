@@ -3,7 +3,7 @@
  * 感谢并修改自 https://raw.githubusercontent.com/KOP-XIAO/QuantumultX/master/Scripts/streaming-ui-check.js
  * 原作者：XIAO_KOP
  */
-const NF_BASE_URL = "https://www.netflix.com/title/70143836";
+const NF_BASE_URL = "https://www.netflix.com/title/";
 const DISNEY_BASE_URL = 'https://www.disneyplus.com';
 const DISNEY_LOCATION_BASE_URL = 'https://disney.api.edge.bamgrid.com/graph/v1/device/graphql';
 const YTB_BASE_URL = "https://www.youtube.com/premium";
