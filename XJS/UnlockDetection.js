@@ -11,7 +11,6 @@ const Dazn_BASE_URL = "https://startup.core.indazn.com/misl/v5/Startup";
 const Param_BASE_URL = "https://www.paramountplus.com/"
 const Discovery_token_BASE_URL = "https://us1-prod-direct.discoveryplus.com/token?deviceId=d1a4a5d25212400d1e6985984604d740&realm=go&shortlived=true"
 const Discovery_BASE_URL = "https://us1-prod-direct.discoveryplus.com/users/me"
-
 const GPT_BASE_URL = 'https://chat.openai.com/'
 const GPT_RegionL_URL = 'https://chat.openai.com/cdn-cgi/trace'
 
