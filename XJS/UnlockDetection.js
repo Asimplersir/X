@@ -3,15 +3,18 @@
  * 感谢并修改自 https://raw.githubusercontent.com/KOP-XIAO/QuantumultX/master/Scripts/streaming-ui-check.js
  * 原作者：XIAO_KOP
  */
-const BASE_URL = 'https://www.netflix.com/title/';
-const BASE_URL_YTB = "https://www.youtube.com/premium";
-const BASE_URL_DISNEY = 'https://www.disneyplus.com';
-const BASE_URL_Dazn = "https://startup.core.indazn.com/misl/v5/Startup";
-const BASE_URL_Param = "https://www.paramountplus.com/"
-const BASE_URL_Discovery_token = "https://us1-prod-direct.discoveryplus.com/token?deviceId=d1a4a5d25212400d1e6985984604d740&realm=go&shortlived=true"
-const BASE_URL_Discovery = "https://us1-prod-direct.discoveryplus.com/users/me"
-const BASE_URL_GPT = 'https://chat.openai.com/'
-const Region_URL_GPT = 'https://chat.openai.com/cdn-cgi/trace'
+const NF_BASE_URL = "https://www.netflix.com/title/81280792";
+const DISNEY_BASE_URL = 'https://www.disneyplus.com';
+const DISNEY_LOCATION_BASE_URL = 'https://disney.api.edge.bamgrid.com/graph/v1/device/graphql';
+const YTB_BASE_URL = "https://www.youtube.com/premium";
+const Dazn_BASE_URL = "https://startup.core.indazn.com/misl/v5/Startup";
+const Param_BASE_URL = "https://www.paramountplus.com/"
+
+const Discovery_token_BASE_URL = "https://us1-prod-direct.discoveryplus.com/token?deviceId=d1a4a5d25212400d1e6985984604d740&realm=go&shortlived=true"
+const Discovery_BASE_URL = "https://us1-prod-direct.discoveryplus.com/users/me"
+
+const GPT_BASE_URL = 'https://chat.openai.com/'
+const GPT_RegionL_URL = 'https://chat.openai.com/cdn-cgi/trace'
 
 var inputParams = $environment.params;
 var nodeName = inputParams.node;
