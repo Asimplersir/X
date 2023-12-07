@@ -1,3 +1,6 @@
+#!name=YouTube
+#!desc=YouTube
+
 [Rule]
 AND,((DOMAIN-SUFFIX,googlevideo.com), (PROTOCOL,UDP)),REJECT-NO-DROP
 
