@@ -1,5 +1,5 @@
-#!name=YouTube
-#!desc=YouTube
+#!name=YouTube去广告
+#!desc=YouTube去广告规则
 
 [Rule]
 AND,((DOMAIN-SUFFIX,googlevideo.com), (PROTOCOL,UDP)),REJECT-NO-DROP
