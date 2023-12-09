@@ -20,3 +20,7 @@ https://raw.githubusercontent.com/yqc007j/QuantumultX/master/ChatGPTPlusCrack.js
 TikTok
 
 https://github.com/Semporia/TikTok-Unlock
+
+广告拦截
+
+https://raw.githubusercontent.com/Cats-Team/AdRules/main/qx.conf
