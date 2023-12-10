@@ -1,0 +1,13 @@
+name: "广告拦截"
+desc: "去广告规则"
+
+rule-providers:
+  AdRuleDomain:
+    type: http
+    behavior: domain
+    url: "https://raw.githubusercontent.com/Asimpleuncle/simple/main/AdRule/AdRuleDomain.yaml"
+    path: ./ruleset/AdRuleDomain.yaml
+    interval: 86400
+
+rules:
+  - RULE-SET,AdRuleDomain,REJECT
