@@ -5,6 +5,7 @@ rule-providers:
   AntiAD:
     behavior: domain
     url: "https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules_domainset.txt"
+    path: ./ruleset/adrules_domainset.txt
     interval: 86400
 
 rules:
