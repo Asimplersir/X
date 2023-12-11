@@ -2,7 +2,7 @@ name: "广告拦截"
 desc: "去广告规则"
 
 rule-providers:
-    AntiAD:
+  AntiAD:
     behavior: domain
     url: "https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules_domainset.txt"
     interval: 86400
