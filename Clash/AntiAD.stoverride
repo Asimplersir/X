@@ -2,16 +2,11 @@ name: "广告拦截"
 desc: "去广告规则"
 
 rule-providers:
-  Anti-AD:
-    behavior: classical
-    url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AdvertisingLite/AdvertisingLite.yaml"
-    interval: 86400
-
   Anti-AD_Domain:
     behavior: domain
-    url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AdvertisingLite/AdvertisingLite_Domain.yaml"
+    url: "https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules_domainset.txt"
+    format: 'text'
     interval: 86400
 
 rules:
-  - RULE-SET,Anti-AD,REJECT
   - RULE-SET,Anti-AD_Domain,REJECT
