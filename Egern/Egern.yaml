@@ -305,6 +305,9 @@ policy_groups:
     icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Airport.png
 rules:
 - rule_set:
+    match: https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules.list
+    policy: REJECT
+- rule_set:
     match: https://raw.gitmirror.com/Coldvvater/Mononoke/master/Surge/Rules/AI.list
     policy: OpenAI
 - rule_set:
