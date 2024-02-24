@@ -35,7 +35,7 @@ policy_groups:
     - Japan
     - America
     - Others
-    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Rocket.png
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Proxy.png
     hidden: false
 - external:
     name: Auto
