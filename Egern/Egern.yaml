@@ -20,7 +20,7 @@ policy_groups:
     name: 手动选择
     type: select
     urls:
-    - https://ttxlov.xyz/?L2Rvd25sb2FkQ29uZmlnL1NoYWRvd1JvY2tldEltcG9ydFNlcnZpY2UuYXNweD90PXRyb2phbiZ1cms9ZmJiMGU2NzctZjkxMi00ZjA5LTlhMGYtZmI3NWMzOThiYzljJm1tPTEzJjE1MWZhMTUyZDk1ODQ3Njhh
+    - 此处填入你的订阅链接
     icon: https://raw.githubusercontent.com/Repcz/Tool/X/Egern/Photo/ICON/Egern.png
     hidden: false
 - select:
