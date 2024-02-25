@@ -1,376 +1,386 @@
+http_port: 3080
+socks_port: 3090
 vif_only: true
-hide_vpn_icon: true
+hijack_dns:
+- '*:53'
+geoip_db_url: https://raw.gitmirror.com/soffchen/GeoIP2-CN/release/Country.mmdb
 dns_servers:
-- system
-- 119.29.29.29
-- 233.5.5.5
+- 223.5.5.5
+- 1.1.1.1
 hosts:
-  dot.pub: 1.12.12.12
   dns.alidns.com: 223.5.5.5
-  doh.pub: 1.12.12.12
+  dns.google: 8.8.8.8
+  one.one.one.one: 1.1.1.1
 secure_dns:
   servers:
-  - https://dns.alidns.com/dns-query
+  - https://223.5.5.5/dns-query
+  - https://1.1.1.1/dns-query
   ecs: false
   public_ip_lookup_url: ''
 policy_groups:
 - select:
-    name: 节点选择
+    name: Final
     policies:
-    - 香港节点
-    - 日本节点
-    - 美国节点
-    - 台湾节点
-    - 狮城节点
-    - 英国节点
-    - 其他节点
+    - Proxy
     - DIRECT
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Clubhouse.png
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Final.png
 - select:
-    name: 手动切换
+    name: Proxy
     policies:
-    - 所有订阅
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png
-- auto_test:
-    name: 自动选择
-    policies:
-    - 所有订阅
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Universal/Auto_Speed.png
+    - Auto
+    - Fallback
+    - HongKong
+    - TaiWan
+    - Singapore
+    - Japan
+    - America
+    - Others
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Proxy.png
+    hidden: false
+- external:
+    name: Auto
+    type: auto_test
+    urls:
+    - 此处填入你的订阅链接
+    filter: ^((?!Traffic|Expire)).*$
+    interval: 600
+    tolerance: 50
+    timeout: 5
+    update_interval: 86400
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Auto.png
+- external:
+    name: Fallback
+    type: fallback
+    urls:
+    - 此处填入你的订阅链接
+    filter: ^((?!Traffic|Expire)).*$
+    interval: 600
+    tolerance: 50
+    timeout: 5
+    update_interval: 86400
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Available.png
 - select:
-    name: 电报消息
+    name: Global
     policies:
-    - 香港节点
-    - 日本节点
-    - 美国节点
-    - 台湾节点
-    - 狮城节点
-    - 英国节点
-    flatten: false
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Social_Media/Telegram.png
+    - Proxy
+    - Auto
+    - Fallback
+    - HongKong
+    - TaiWan
+    - Singapore
+    - Japan
+    - America
+    - Others
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Global.png
 - select:
     name: OpenAI
     policies:
-    - 美国节点
-    - 狮城节点
-    - 日本节点
-    - 台湾节点
-    flatten: false
-    icon: https://github.com/shindgewongxj/WHATSINStash/raw/main/icon/openai.png
+    - America
+    - Japan
+    - Singapore
+    - TaiWan
+    - Others
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Bot.png
 - select:
-    name: 油管视频
+    name: YouTube
     policies:
-    - 香港节点
-    - 日本节点
-    - 狮城节点
-    - 台湾节点
-    - 美国节点
-    - 英国节点
-    flatten: false
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Google_Suite/YouTube.png
+    - Proxy
+    - Auto
+    - Fallback
+    - HongKong
+    - TaiWan
+    - Singapore
+    - Japan
+    - America
+    - Others
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/YouTube.png
 - select:
-    name: 奈飞视频
+    name: NETFLIX
     policies:
-    - 香港节点
-    - 日本节点
-    - 台湾节点
-    - 狮城节点
-    - 美国节点
-    - 英国节点
-    - 其他节点
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Universal/Netflix.png
+    - Proxy
+    - Auto
+    - Fallback
+    - HongKong
+    - TaiWan
+    - Singapore
+    - Japan
+    - America
+    - Others
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Netflix.png
 - select:
-    name: 哔哩哔哩
+    name: Disney+
+    policies:
+    - Proxy
+    - Auto
+    - Fallback
+    - HongKong
+    - TaiWan
+    - Singapore
+    - Japan
+    - America
+    - Others
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Disney%2B.png
+- select:
+    name: Emby
+    policies:
+    - Proxy
+    - Auto
+    - Fallback
+    - HongKong
+    - TaiWan
+    - Singapore
+    - Japan
+    - America
+    - Others
+    - DIRECT
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Emby.png
+- select:
+    name: BiliBili
     policies:
     - DIRECT
-    - 香港节点
-    - 日本节点
-    - 台湾节点
-    - 狮城节点
-    icon: https://github.com/shindgewongxj/WHATSINStash/raw/main/icon/bilibilitv.png
+    - HongKong
+    - TaiWan
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/bilibili.png
 - select:
-    name: 国外视频
+    name: Spotify
     policies:
-    - 香港节点
-    - 日本节点
-    - 台湾节点
-    - 狮城节点
-    - 美国节点
-    - 英国节点
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Social_Media/Diaspora.png
+    - Proxy
+    - Auto
+    - Fallback
+    - HongKong
+    - TaiWan
+    - Singapore
+    - Japan
+    - America
+    - Others
+    - DIRECT
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Spotify.png
 - select:
-    name: 国内视频
+    name: NetEaseMusic
     policies:
     - DIRECT
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Universal/TencentVideo.png
+    - Proxy
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Netease_Music.png
 - select:
-    name: Instagram
+    name: TikTok
     policies:
-    - 香港节点
-    - 日本节点
-    - 台湾节点
-    - 狮城节点
-    - 美国节点
-    - 英国节点
-    - 其他节点
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Social_Media/Instagram.png
+    - Proxy
+    - Auto
+    - Fallback
+    - HongKong
+    - TaiWan
+    - Singapore
+    - Japan
+    - America
+    - Others
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/TikTok.png
 - select:
-    name: Twitter
+    name: Streaming
     policies:
-    - 香港节点
-    - 日本节点
-    - 台湾节点
-    - 狮城节点
-    - 美国节点
-    - 英国节点
-    - 其他节点
-    flatten: false
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Social_Media/Twitter.png
+    - Proxy
+    - Auto
+    - Fallback
+    - HongKong
+    - TaiWan
+    - Singapore
+    - Japan
+    - America
+    - Others
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Streaming.png
 - select:
-    name: Tiktok
+    name: Telegram
     policies:
-    - 香港节点
-    - 日本节点
-    - 台湾节点
-    - 狮城节点
-    - 美国节点
-    - 英国节点
-    - 其他节点
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Social_Media/TikTok.png
+    - Proxy
+    - Auto
+    - Fallback
+    - HongKong
+    - TaiWan
+    - Singapore
+    - Japan
+    - America
+    - Others
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Telegram_X.png
 - select:
-    name: GoogleFCM
-    policies:
-    - 香港节点
-    - 日本节点
-    - 台湾节点
-    - 狮城节点
-    - 美国节点
-    - 英国节点
-    - 其他节点
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Google_Suite/Google.png
-- select:
-    name: WeChat
+    name: Apple
     policies:
     - DIRECT
-    - 香港节点
-    - 狮城节点
-    - 台湾节点
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Universal/WeChat.png
+    - Proxy
+    - Auto
+    - Fallback
+    - HongKong
+    - TaiWan
+    - Singapore
+    - Japan
+    - America
+    - Others
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Apple.png
 - select:
-    name: 网易云音乐
+    name: Google
+    policies:
+    - Proxy
+    - Auto
+    - Fallback
+    - HongKong
+    - TaiWan
+    - Singapore
+    - Japan
+    - America
+    - Others
+    - DIRECT
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Google.png
+- select:
+    name: Microsoft
     policies:
     - DIRECT
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Universal/NetEase_Music.png
+    - Proxy
+    - Auto
+    - Fallback
+    - HongKong
+    - TaiWan
+    - Singapore
+    - Japan
+    - America
+    - Others
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Microsoft.png
 - select:
-    name: OneDrive
+    name: Games
     policies:
     - DIRECT
-    - 香港节点
-    - 日本节点
-    - 台湾节点
-    - 狮城节点
-    - 美国节点
-    icon: https://raw.githubusercontent.com/Orz-3/mini/master/Alpha/ASN.png
-- select:
-    name: 微软服务
-    policies:
-    - DIRECT
-    - 香港节点
-    - 日本节点
-    - 台湾节点
-    - 狮城节点
-    - 美国节点
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Universal/Microsoft.png
-- select:
-    name: 苹果服务
-    policies:
-    - DIRECT
-    - 香港节点
-    - 美国节点
-    icon: https://github.com/shindgewongxj/WHATSINStash/raw/main/icon/apple.png
-- select:
-    name: 全球直连
-    policies:
-    - DIRECT
-    icon: https://github.com/shindgewongxj/WHATSINStash/raw/main/icon/londoneye.png
-    hidden: true
+    - Proxy
+    - Auto
+    - Fallback
+    - HongKong
+    - TaiWan
+    - Singapore
+    - Japan
+    - America
+    - Others
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Game.png
 - select:
     name: Speedtest
     policies:
+    - Proxy
     - DIRECT
-    - 香港节点
-    - 日本节点
-    - 台湾节点
-    - 狮城节点
-    - 美国节点
-    - 英国节点
-    - 其他节点
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Universal/Speedtest.png
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Speedtest.png
 - select:
-    name: 香港节点
+    name: HongKong
     policies:
-    - 所有订阅
+    - Auto
     flatten: true
-    filter: 港|🇭🇰|香港|HK|Hong
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Rounded_Rectangle/Hong_Kong.png
+    filter: 港|🇭🇰|HK|Hong
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Hong_Kong.png
 - select:
-    name: 台湾节点
+    name: TaiWan
     policies:
-    - 所有订阅
+    - Auto
     flatten: true
-    filter: 台|🇨🇳|台湾|TW|Tai
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Rounded_Rectangle/Taiwan.png
+    filter: 台|🇨🇳|🇹🇼|TW|Taiwan
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/China.png
 - select:
-    name: 日本节点
+    name: Singapore
     policies:
-    - 所有订阅
+    - Auto
     flatten: true
-    filter: 日|🇯🇵|日本|JP|Japan
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Rounded_Rectangle/Japan.png
+    filter: 坡|🇸🇬|SG|Singapore
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Singapore.png
 - select:
-    name: 狮城节点
+    name: Japan
     policies:
-    - 所有订阅
+    - Auto
     flatten: true
-    filter: 坡|🇸🇬|新加坡|狮城|SG|Singapore
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Rounded_Rectangle/Singapore.png
+    filter: 日|🇯🇵|JP|Japan
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Japan.png
 - select:
-    name: 美国节点
+    name: America
     policies:
-    - 所有订阅
+    - Auto
     flatten: true
-    filter: 美|🇺🇸|美国|US|States|American
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Rounded_Rectangle/United_States.png
-- auto_test:
-    name: 英国节点
-    policies:
-    - 所有订阅
-    flatten: true
-    filter: 🇬🇧|英国|英|英格兰|UK|United Kingdom
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Rounded_Rectangle/United_Kingdom.png
+    filter: 美|🇺🇸|US|States|American
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/United_States.png
 - select:
-    name: 其他节点
+    name: Others
     policies:
-    - 所有订阅
+    - Auto
     flatten: true
-    filter: ^((?!套餐|到期|余额|剩余|流量|官网|🇭🇰|港|HK|Hong|🇹🇼|台|TW|Tai|🇯🇵|日|JP|Japan|🇸🇬|坡|狮城|SG|Singapore|🇰🇷|韩|KR|KOR|Korea|🇺🇸|美|US|States|American|🇬🇧|英国|英|英格兰|UK|United Kingdom).)*$
-    icon: https://raw.githubusercontent.com/Semporia/Hand-Painted-icon/master/Rounded_Rectangle/Turkey.png
-- select:
-    name: 漏网之鱼
-    policies:
-    - DIRECT
-    - 香港节点
-    - 日本节点
-    - 台湾节点
-    - 美国节点
-    - 狮城节点
-    - 英国节点
-    - 其他节点
-    icon: https://github.com/shindgewongxj/WHATSINStash/raw/main/icon/betahub.png
-- external:
-    name: 所有订阅
-    type: select
-    urls:
-    - 替换成你的订阅
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/VIP.png
+    filter: ^((?!🇭🇰|港|HK|Hong|🇹🇼|台|TW|Tai|🇯🇵|日|JP|Japan|🇸🇬|坡|狮城|SG|Singapore|🇺🇸|美|US|States|American).)*$
+    icon: https://raw.gitmirror.com/Koolson/Qure/master/IconSet/mini/Airport.png
 rules:
 - rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/APNs.yaml
-    policy: DIRECT
-- rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/Ads_ConnersHua.yaml
+    match: https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules.list
     policy: REJECT
 - rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/Hijacking_ConnersHua.yaml
-    policy: REJECT
-- rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/Tracking_ConnersHua.yaml
-    policy: REJECT
-- rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/OpenAI.yaml
+    match: https://raw.gitmirror.com/Coldvvater/Mononoke/master/Surge/Rules/AI.list
     policy: OpenAI
 - rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/Apple.yaml
-    policy: 苹果服务
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/YouTube/YouTube.list
+    policy: YouTube
 - rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/Github.yaml
-    policy: 微软服务
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/Netflix/Netflix.list
+    policy: NETFLIX
 - rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/OneDrive.yaml
-    policy: Onedrive
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/Disney/Disney.list
+    policy: Disney+
 - rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/Microsoft.yaml
-    policy: 微软服务
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/Emby/Emby.list
+    policy: Emby
 - rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/YouTube.yaml
-    policy: 油管视频
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/Bahamut/Bahamut.list
+    policy: TaiWan
 - rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/Google.yaml
-    policy: GoogleFCM
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/BiliBiliIntl/BiliBiliIntl.list
+    policy: Streaming
 - rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/Telegram.yaml
-    policy: 电报消息
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/BiliBili/BiliBili.list
+    policy: BiliBili
 - rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/Twitter.yaml
-    policy: Twitter
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/Spotify/Spotify.list
+    policy: Spotify
 - rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/ProxyMedia.yaml
-    policy: 国外视频
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/NetEaseMusic/NetEaseMusic.list
+    policy: NetEaseMusic
 - rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/ProxyGFW.yaml
-    policy: 国外网站
+    match: https://raw.gitmirror.com/Semporia/TikTok-Unlock/master/Surge/TikTok.list
+    policy: TikTok
 - rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/Bilibili.yaml
-    policy: 哔哩哔哩
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/GlobalMedia/GlobalMedia_All_No_Resolve.list
+    policy: Streaming
 - rule_set:
-    match: https://github.com/Repcz/Tool/raw/X/Egern/Rules/Lan.yaml
-    policy: DIRECT
+    match: https://raw.gitmirror.com/Coldvvater/Mononoke/master/Surge/Rules/Telegram.list
+    policy: Telegram
 - rule_set:
-    match: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/WeChat/WeChat.list
-    policy: WeChat
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/GitHub/GitHub.list
+    policy: Global
 - rule_set:
-    match: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Instagram/Instagram.list
-    policy: Instagram
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/Twitter/Twitter.list
+    policy: Global
 - rule_set:
-    match: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Threads/Threads.list
-    policy: Instagram
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/TestFlight/TestFlight.list
+    policy: Global
 - rule_set:
-    match: https://gh.surgee.me/https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/NetEaseMusic/NetEaseMusic.list
-    policy: 网易云音乐
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/Apple/Apple_All_No_Resolve.list
+    policy: Apple
 - rule_set:
-    match: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Facebook/Facebook.list
-    policy: Instagram
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/Google/Google.list
+    policy: Google
 - rule_set:
-    match: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Speedtest/Speedtest.list
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/Microsoft/Microsoft.list
+    policy: Microsoft
+- rule_set:
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/Game/Game.list
+    policy: Games
+- rule_set:
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/Speedtest/Speedtest.list
     policy: Speedtest
+- rule_set:
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/Global/Global_All_No_Resolve.list
+    policy: Global
+- rule_set:
+    match: https://raw.gitmirror.com/blackmatrix7/ios_rule_script/master/rule/Surge/Lan/Lan.list
+    policy: DIRECT
 - geoip:
     match: CN
     policy: DIRECT
 - default:
-    policy: 兜底分流
-- domain:
-    match: ifconfig.me
-    policy: 全球直连
-- domain_suffix:
-    match: cn
-    policy: 全球直连
-- geoip:
-    match: CN
-    policy: 全球直连
-- ip_cidr:
-    match: 192.168.0.0/16
-    policy: 全球直连
-- ip_cidr:
-    match: 10.0.0.0/8
-    policy: 全球直连
-- ip_cidr:
-    match: 127.0.0.0/8
-    policy: 全球直连
-- ip_cidr:
-    match: 172.16.0.0/12
-    policy: 全球直连
-- ip_cidr:
-    match: 192.128.0.0/16
-    policy: 全球直连
-- ip_cidr:
-    match: 224.0.0.0/24
-    policy: 全球直连
+    policy: Final
+mitm:
+  enabled: true
