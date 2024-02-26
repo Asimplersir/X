@@ -120,13 +120,11 @@ policy_groups:
     - 手动选择
     icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Emby.png
 - select:
-    name: 国内媒体
+    name: 国内分流
     policies:
     - DIRECT
-    - 香港节点
-    - 台湾节点
     - 手动选择
-    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/bilibili.png
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/China_Map.png
 - select:
     name: 兜底分流
     policies:
@@ -252,8 +250,11 @@ rules:
     match: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Apple/Apple_All_No_Resolve.list
     policy: 苹果服务
 - rule_set:
+    match: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/China/China_All_No_Resolve.list
+    policy: 国内分流
+- rule_set:
     match: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/HuYa/HuYa.list
-    policy: 国内媒体
+    policy: 国内分流
 - rule_set:
     match: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Lan/Lan.list
     policy: DIRECT
