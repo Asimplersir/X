@@ -120,7 +120,6 @@ policy_groups:
     - 台湾节点
     - 节点选择
     icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Final.png
-    hidden: false
 - auto_test:
     name: 香港节点
     policies:
