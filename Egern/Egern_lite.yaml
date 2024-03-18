@@ -169,7 +169,7 @@ policy_groups:
     icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rainbow_1.png
 rules:
 - rule_set:
-    match: https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules.list
+    match: https://raw.githubusercontent.com/Repcz/Tool/X/Egern/Rules/Anti-ad.yaml
     policy: REJECT
 - rule_set:
     match: https://raw.githubusercontent.com/Repcz/EgernRules/X/Rules/OpenAI/OpenAI.yaml
