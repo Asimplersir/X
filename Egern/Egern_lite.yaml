@@ -220,6 +220,9 @@ rules:
     match: https://raw.githubusercontent.com/Repcz/EgernRules/X/Rules/Proxy/Proxy.yaml
     policy: 国外网站
 - rule_set:
+    match: https://raw.githubusercontent.com/Repcz/EgernRules/X/Rules/Speedtest/Speedtest.yaml
+    policy: 节点选择
+- rule_set:
     match: https://raw.githubusercontent.com/Repcz/EgernRules/X/Rules/Lan/Lan.yaml
     policy: 国内分流
 - geoip:
