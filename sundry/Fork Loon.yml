@@ -1,0 +1,81 @@
+name: Fork Loon
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "10 22 * * *"
+  
+jobs:
+  Fork-Loon:
+    runs-on: ubuntu-latest
+    env:
+      TZ: 'Asia/Shanghai'
+    
+    steps: 
+    - name: Checkout target repository
+      uses: actions/checkout@v4.1.5
+    
+      # 拉取文件
+    - name: Clone
+      run: |
+        rm -rf Rewrite/Loon/Rule/*
+        mkdir -p Rewrite/Loon/Rule
+        git clone https://github.com/blackmatrix7/ios_rule_script.git temp_directory
+        cp -r temp_directory/rewrite/Loon/* Loon/Rule/
+        rm -rf temp_directory    
+
+     # 编辑文件
+    - name: Edit plugin
+      run: |
+        cd Loon/Rule
+        find . -type f -name '*.plugin' -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            sed -i '3,6d' "$file"
+          fi
+        done
+
+     # 编辑文件
+    - name: Edit README
+      run: |
+        cd Loon/Rule
+        find . -type f -name 'README.md' -print0 | while IFS= read -r -d $'\0' readme; do
+          if [ -f "$readme" ]; then
+            # 删除和替换指定的字符串
+            sed -i -e '/\*\*MASTER分支 CDN (每日更新)\*\*/d' \
+                   -e '/\*\*MASTER分支 GHProxy (每日更新)\*\*/d' \
+                   -e '/\(不定时更新\)/d' \
+                   -e '/blackmatrix7\/ios_rule_script\/release\/rewrite\/Loon/d' \
+                   -e '/https:\/\/cdn.jsdelivr.net/d' \
+                   -e '/https:\/\/ghproxy.com/d' \
+                   -e 's|MASTER分支|分支|g' \
+                   -e 's|## Loon|## Loon|g' \
+                   -e 's|blackmatrix7/ios_rule_script/master/rewrite/Loon|Asimplersir/Rewrite/X/Loon/Rule|g' \
+                   -e 's|github.com/blackmatrix7/ios_rule_script/tree/master/rewrite/Loon|github.com/Asimplersir/Rewrite/tree/X/Loon/Rule|g' \
+                   -e 's|USER-AGENT|USER-AGENT(Loon支持)|g' \
+                   -e 's|TOTAL|TOTAL(仅供参考)|g' \
+                   -e 's|Loon定制化规则|Loon定制化规则|g' \
+                   -e 's|Asimplersir/Rewrite/X/Loon/Rule/\(.*\)\.plugin|Asimplersir/Rewrite/X/Loon/Rule/\1.plugin|g' \
+                   -e 's|-\([[:space:]]*\)\([A-Za-z0-9_]*\)\.plugin|-\1\2.plugin|' \
+                   "$readme"
+          else
+            echo "$readme not found."
+          fi
+        done
+
+    - name: Add and Commits
+      run: |
+        if [[ -n $(git status -s) ]]; then
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "Auto Update $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M')"
+          git push 
+        else
+          echo "No changes to commit."
+        fi
+
+    - name: Cleanup Workflow
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+        retain_days: 0
+        keep_minimum_runs: 2

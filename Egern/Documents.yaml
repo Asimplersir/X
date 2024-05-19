@@ -1,0 +1,8 @@
+#!name=Documents
+#!desc=Documents解锁会员
+
+[Script]
+documents = type=http-request, pattern=^https:\/\/license\.pdfexpert\.com\/api\/2\.0\/documents\/subscription\/refresh, script-path=https://raw.githubusercontent.com/89996462/Quantumult-X/main/ycdz/documents.js, requires-body=true
+
+[MITM]
+hostname = %APPEND% license.pdfexpert.com

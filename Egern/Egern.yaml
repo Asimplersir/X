@@ -1,0 +1,252 @@
+vif_only: true
+hijack_dns:
+- '*:53'
+geoip_db_url: https://github.com/Masaiki/GeoIP2-CN/raw/release/Country.mmdb
+asn_db_url: ''
+dns_servers:
+- 233.5.5.5
+- 8.8.8.8
+- 1.1.1.1
+hosts:
+  dns.google: 8.8.8.8
+  one.one.one.one: 1.1.1.1
+  dns.alidns.com: 223.5.5.5
+secure_dns:
+  servers:
+  - https://dns.alidns.com/dns-query
+  - https://1.1.1.1/dns-query
+  ecs: false
+  public_ip_lookup_url: ''
+policy_groups:
+- external:
+    name: 节点选择
+    type: select
+    urls:
+    - 此处填写订阅地址
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/Egern.png
+    hidden: false
+- select:
+    name: 国外网站
+    policies:
+    - 香港节点
+    - 美国节点
+    - 狮城节点
+    - 日本节点
+    - 台湾节点
+    - 节点选择
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/Global.png
+- select:
+    name: 国际媒体
+    policies:
+    - 香港节点
+    - 美国节点
+    - 狮城节点
+    - 日本节点
+    - 台湾节点
+    - 节点选择
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/YouTube.png
+- select:
+    name: 苹果服务
+    policies:
+    - DIRECT
+    - 香港节点
+    - 美国节点
+    - 狮城节点
+    - 日本节点
+    - 台湾节点
+    - 节点选择
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/Apple.png
+- select:
+    name: 谷歌服务
+    policies:
+    - 香港节点
+    - 美国节点
+    - 狮城节点
+    - 日本节点
+    - 台湾节点
+    - 节点选择
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/Google.png
+- select:
+    name: 电报消息
+    policies:
+    - 香港节点
+    - 美国节点
+    - 狮城节点
+    - 日本节点
+    - 台湾节点
+    - 节点选择
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/Telegram.png
+- select:
+    name: 推特消息
+    policies:
+    - 香港节点
+    - 美国节点
+    - 狮城节点
+    - 日本节点
+    - 台湾节点
+    - 节点选择
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/Twitter.png
+- select:
+    name: 国际抖音
+    policies:
+    - 香港节点
+    - 美国节点
+    - 狮城节点
+    - 日本节点
+    - 台湾节点
+    - 节点选择
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/TikTok.png
+- select:
+    name: OpenAI
+    policies:
+    - 香港节点
+    - 美国节点
+    - 狮城节点
+    - 日本节点
+    - 台湾节点
+    - 节点选择
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/OpenAI.png
+- select:
+    name: 国内分流
+    policies:
+    - DIRECT
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/China_Map.png
+- select:
+    name: 兜底分流
+    policies:
+    - 香港节点
+    - 美国节点
+    - 狮城节点
+    - 日本节点
+    - 台湾节点
+    - 节点选择
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/Final.png
+- auto_test:
+    name: 香港节点
+    policies:
+    - 节点选择
+    flatten: true
+    filter: 港|🇭🇰|HK|Hong
+    tolerance: 50
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/Hong_Kong.png
+- auto_test:
+    name: 美国节点
+    policies:
+    - 节点选择
+    flatten: true
+    filter: 美|🇺🇸|US|States|American
+    tolerance: 50
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/United_States.png
+- auto_test:
+    name: 狮城节点
+    policies:
+    - 节点选择
+    flatten: true
+    filter: 坡|🇸🇬|SG|Singapore
+    tolerance: 50
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/Singapore.png
+- auto_test:
+    name: 日本节点
+    policies:
+    - 节点选择
+    flatten: true
+    filter: 日|🇯🇵|JP|Japan
+    tolerance: 50
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/Japan.png
+- auto_test:
+    name: 台湾节点
+    policies:
+    - 节点选择
+    flatten: true
+    filter: 台|🇨🇳|🇹🇼|TW|Taiwan
+    tolerance: 50
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/China.png
+- auto_test:
+    name: 其他节点
+    policies:
+    - 节点选择
+    flatten: true
+    filter: ^((?!🇭🇰|港|HK|Hong|🇹🇼|台|TW|Tai|🇯🇵|日|JP|Japan|🇸🇬|坡|狮城|SG|Singapore|🇺🇸|美|US|States|American).)*$
+    icon: https://raw.githubusercontent.com/Asimplersir/X/X/icon/Rainbow.png
+rules:
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/Direct/Direct.yaml
+    policy: 国内分流
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/AdRules/X/Rule/Antiad.yaml
+    policy: REJECT
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/Hijacking/Hijacking.yaml
+    policy: REJECT
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/Privacy/Privacy.yaml
+    policy: REJECT
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/OpenAI/OpenAI.yaml
+    policy: OpenAI
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/Copilot/Copilot.yaml
+    policy: OpenAI
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/Gemini/Gemini.yaml
+    policy: OpenAI
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/China/China.yaml
+    policy: 国内分流
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Ruless/ChinaASN/ChinaASN.yaml
+    policy: 国内分流
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/Apple/Apple.yaml
+    policy: 苹果服务
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/GitHub/GitHub.yaml
+    policy: 国外网站
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/GitLab/GitLab.yaml
+    policy: 国外网站
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/Telegram/Telegram.yaml
+    policy: 电报消息
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/Twitter/Twitter.yaml
+    policy: 推特消息
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/Spotify/Spotify.yaml
+    policy: 国际媒体
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/TikTok/TikTok.yaml
+    policy: 国际抖音
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/Bing/Bing.yaml
+    policy: 国外网站
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/YouTube/YouTube.yaml
+    policy: 谷歌服务
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/Google/Google.yaml
+    policy: 谷歌服务
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/Proxy/Proxy.yaml
+    policy: 国外网站
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/Speedtest/Speedtest.yaml
+    policy: 节点选择
+- rule_set:
+    match: https://raw.githubusercontent.com/Asimplersir/Egern/X/Rules/Lan/Lan.yaml
+    policy: 国内分流
+- geoip:
+    match: CN
+    policy: DIRECT
+    no_resolve: false
+- default:
+    policy: 兜底目标
+mitm:
+  enabled: true
+modules:
+- name: Sub-Store
+  url: https://raw.githubusercontent.com/Peng-YM/Sub-Store/master/config/Surge.sgmodule
+  enabled: true
+- name: 'Script Hub: 重写 & 规则集转换'
+  url: https://raw.githubusercontent.com/Script-Hub-Org/Script-Hub/main/modules/script-hub.surge.sgmodule
+  enabled: true

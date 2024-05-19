@@ -1,0 +1,13 @@
+name: "ChinaIPs"
+desc: "ChinaIPs分流规则"
+
+rule-providers:
+  ChinaIPs:
+    type: http
+    behavior: ipcidr
+    url: "https://raw.githubusercontent.com/Asimplersir/Rules/X/Stash/Rule/ChinaIPs/ChinaIPs_IP.yaml"
+    path: ./ruleset/ChinaIPs_IP.yaml
+    interval: 86400
+
+rules:
+  - RULE-SET,ChinaIPs,DIRECT

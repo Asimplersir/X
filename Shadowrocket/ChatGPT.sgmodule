@@ -1,0 +1,10 @@
+#!name=ChatGPTPlus
+#!desc=ChatGPTPlus
+
+[Script]
+
+ChatGPTPlusCrack_1 = type=http-response, pattern=^https?:\/\/ios\.chat\.openai\.com\/backend-api\/(accounts\/check\/|models), requires-body=true, max-size=3145728, script-path=https://raw.githubusercontent.com/yqc007/QuantumultX/master/ChatGPTPlusCrack.js, timeout=60, script-update-interval=0
+
+[MITM]
+
+hostname = %APPEND% ios.chat.openai.com

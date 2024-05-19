@@ -1,0 +1,7 @@
+#!name = 解锁查询
+#!desc = 地理位置、节点解锁、等解锁查询。
+#!icon=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Available_1.png
+
+[Script]
+generic script-path = https://raw.githubusercontent.com/Asimpleuncle/simple/main/XJS/ip-api.js, timeout = 10, tag = 地理位置查询, img-url = location.circle.system
+generic script-path = https://raw.githubusercontent.com/Asimpleuncle/simple/main/XJS/UnlockDetection.js, timeout = 20, tag = 节点解锁查询, img-url = play.circle.system

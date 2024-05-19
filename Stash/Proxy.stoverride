@@ -1,0 +1,21 @@
+name: "Proxy"
+desc: "Proxy分流规则"
+
+rule-providers:
+  Proxy:
+    type: http
+    behavior: classical
+    url: "https://raw.githubusercontent.com/Asimplersir/Rules/X/Stash/Rule/Proxy/Proxy.yaml"
+    path: ./ruleset/Proxy.yaml
+    interval: 86400
+
+  Proxy_Domain:
+    type: http
+    behavior: domain
+    url: "https://raw.githubusercontent.com/Asimplersir/Rules/X/Stash/Rule/Proxy/Proxy_Domain.yaml"
+    path: ./ruleset/Proxy_Domain.yaml
+    interval: 8640
+
+rules:
+  - RULE-SET,Proxy,Proxy
+  - RULE-SET,Proxy_Domain,Proxy
