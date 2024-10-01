@@ -1,0 +1,23 @@
+name: "广告拦截"
+desc: "去广告规则"
+icon: |-
+   https://raw.githubusercontent.com/Asimplersir/X/X/icon/Advertising.png
+
+rule-providers:
+  Anti-AD:
+    type: http
+    behavior: classical
+    url: "https://raw.githubusercontent.com/Asimplersir/Rules/X/Stash/Rule/AdvertisingLite/AdvertisingLite.yaml"
+    path: ./ruleset/AdvertisingLite.yaml
+    interval: 86400
+
+  Anti-AD_Domain:
+    type: http
+    behavior: domain
+    url: "https://raw.githubusercontent.com/Asimplersir/Rules/X/Stash/Rule/AdvertisingLite/AdvertisingLite_Domain.yaml"
+    path: ./ruleset/AdvertisingLite_Domain.yaml
+    interval: 86400
+
+rules:
+  - RULE-SET,Anti-AD,REJECT
+  - RULE-SET,Anti-AD_Domain,REJECT

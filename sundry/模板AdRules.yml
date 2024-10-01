@@ -1,0 +1,145 @@
+name: Fork AdRules
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "55 23,11 * * *"
+
+jobs:
+  ForkBoxs:
+    runs-on: ubuntu-latest
+    env:
+      TZ: 'Asia/Shanghai'
+
+    steps:
+    - name: Checkout target repository
+      uses: actions/checkout@v4.1.7
+
+    - name: Create directories
+      run: mkdir -p temp Rule Rules
+
+    - name: Clone initial files
+      run: |
+        declare -A initial_urls=(
+          ["adrules.list"]="https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules.list"
+          ["easylistchina_surge.list"]="https://raw.githubusercontent.com/limbopro/Adblock4limbo/main/rule/Surge/easylistchina_surge.list"
+        )
+
+        for file in "${!initial_urls[@]}"; do
+          curl -sSL -o "temp/$file" "${initial_urls[$file]}"
+        done
+
+    - name: Process initial files
+      run: |
+        process_file() {
+          local input1=$1
+          local input2=$2
+          local output=$3
+          local transformations=$4
+          local rule_name=$5
+
+          creation_date=$(TZ='Asia/Shanghai' date +"%Y-%m-%d %H:%M:%S")
+          cat "$input1" "$input2" | sort -u > temp/mfile.tmp
+          sed -i -e '/^\s*[#;]/d' -e '/^$/d' temp/mfile.tmp
+          eval "$transformations"
+          local rule_count=$(wc -l < temp/mfile.tmp | tr -d ' ')
+          {
+            echo "# 规则名称: $rule_name"
+            echo "# 规则数量: $rule_count"
+            echo "# 更新时间: $creation_date"
+          } > "$output"
+          cat temp/mfile.tmp >> "$output"
+          sed -i '3a\\' "$output"
+          rm temp/mfile.tmp
+        }
+
+        process_file "temp/adrules.list" "temp/easylistchina_surge.list" "Rule/AdBlock.list" "" "AdBlock"
+        process_file "temp/adrules.list" "temp/easylistchina_surge.list" "Rule/AdBlockQX.list" "sed -i -e 's/DOMAIN-SUFFIX,/HOST-SUFFIX,/g' temp/mfile.tmp" "AdBlock"
+        process_file "temp/adrules.list" "temp/easylistchina_surge.list" "Rule/AdBlock.yaml" "sed -i -e 's/DOMAIN-SUFFIX,/- /g' temp/mfile.tmp && sed -i '1i\no_resolve: true' temp/mfile.tmp && sed -i '2i\domain_set:' temp/mfile.tmp && sed -i '3i\domain_suffix_set:' temp/mfile.tmp" "AdBlock"
+        process_file "temp/adrules.list" "temp/easylistchina_surge.list" "Rule/Antiad.yaml" "sed -i -e 's/DOMAIN-SUFFIX,/  - DOMAIN,/g' temp/mfile.tmp && sed -i '1i\payload:' temp/mfile.tmp" "Antiad"
+        process_file "temp/adrules.list" "temp/easylistchina_surge.list" "Rule/Antiad.list" "sed -i -e 's/DOMAIN-SUFFIX,/DOMAIN,/g' temp/mfile.tmp" "Antiad"
+
+    - name: Clone additional files
+      run: |
+        declare -A additional_urls=(
+          ["AdBlockX.list"]="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Quantumult/refs/heads/main/adblock_reject_quantumult.list"
+          ["AdBlock.list"]="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Surge/refs/heads/main/adblock_reject_surge.list"
+          ["AdBlock.yaml"]="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Egern/refs/heads/main/adblock_reject_egern.yaml"
+          ["Antiad.json"]="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Sing-box/refs/heads/main/adblock_reject.json"
+          ["Antiad.srs"]="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Sing-box/refs/heads/main/adblock_reject.srs"
+          ["Antiad.yaml"]="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/refs/heads/main/adblock_reject.yaml"
+          ["Antiad.txt"]="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/refs/heads/main/adblock_reject.txt"
+        )
+
+        for file in "${!additional_urls[@]}"; do
+          curl -sSL -o "temp/$file" "${additional_urls[$file]}"
+        done
+
+        creation_date=$(TZ='Asia/Shanghai' date +"%Y-%m-%d %H:%M:%S")
+
+        process_file() {
+          local file=$1
+          local transformation=$2
+          local header=$3
+
+          sed -i -e '/^\s*[#;]/d' -e '/^$/d' "temp/$file"
+          eval "$transformation"
+          local rule_count=$(wc -l < "temp/$file" | tr -d ' ')
+          {
+            echo "# 规则名称: $header"
+            echo "# 规则数量: $rule_count"
+            echo "# 更新时间: $creation_date"
+          } > "Rules/$file"
+          cat "temp/$file" >> "Rules/$file"
+          sed -i '3a\\' "Rules/$file"
+        }
+
+        # 处理 AdBlockX.list 文件
+        transformation='sed -i -e "s/DOMAIN-SUFFIX,/HOST-SUFFIX,/g" temp/AdBlockX.list'
+        process_file "AdBlockX.list" "$transformation" "AdBlock"
+
+        # 处理其他文件
+        for file in AdBlock.list AdBlock.yaml Antiad.json Antiad.srs Antiad.yaml Antiad.txt; do
+          process_file "$file" "" "AdBlock"
+        done
+
+        rm temp/*
+
+      # 拉取文件
+    - name: Clone CNIP
+      run: |
+        mkdir -p CNIP
+        curl -L -o CNIP/Country.mmdb https://github.com/Masaiki/GeoIP2-CN/raw/release/Country.mmdb
+        curl -L -o CNIP/Country.txt https://github.com/Masaiki/GeoIP2-CN/raw/release/CN-ip-cidr.txt
+      env:
+         TZ: Asia/Shanghai
+
+        # 拉取文件
+    - name: Clone ASN
+      run: |
+        mkdir -p ASN
+        curl -L -o ASN/GeoASN.mmdb https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-ASN.mmdb
+        curl -L -o ASN/GeoCity.mmdb https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-City.mmdb
+        curl -L -o ASN/Country.mmdb https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb
+      env:
+         TZ: Asia/Shanghai
+        
+    - name: Add and Commit
+      run: |
+        if [[ -n $(git status -s) ]]; then
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "Auto Update $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M')"
+          git pull --rebase origin X
+          git push origin X  
+        else
+          echo "No changes to commit."
+        fi
+
+    - name: Cleanup Workflow
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+        retain_days: 0
+        keep_minimum_runs: 2
+

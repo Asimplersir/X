@@ -1,0 +1,783 @@
+
+name: Fork Rules
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 20 * * *"
+
+jobs:
+  ForkRules:
+    runs-on: ubuntu-latest
+    env:
+      TZ: 'Asia/Shanghai'
+
+    steps:
+    - name: Checkout target repository
+      uses: actions/checkout@v4.1.7
+
+    # 拉取文件
+    - name: Clone Rules
+      run: |
+        # 克隆规则仓库
+        git clone https://github.com/blackmatrix7/ios_rule_script.git temp_directory
+        
+        # 定义目标目录和相应的规则路径
+        declare -A rules=(
+          ["Egern/Rules"]="Surge"
+          ["Egern/Rule"]="QuantumultX"
+          ["Loon/Rules"]="Loon"
+          ["QuantumultX/Rules"]="QuantumultX"
+          ["Shadowrocket/Rules"]="Shadowrocket"
+          ["Stash/Rules"]="Clash"
+        )
+        
+        # 拷贝对应的规则文件
+        for dir in "${!rules[@]}"; do
+          mkdir -p "$dir"
+          if [ -d "temp_directory/rule/${rules[$dir]}" ]; then
+            cp -r temp_directory/rule/${rules[$dir]}/* "$dir/"
+          fi
+        done
+        # 清理临时目录
+        rm -rf temp_directory
+
+###### Egern
+    # 适配 Egern 规则（删除空行和注释行）
+    - name: Edit Egern files
+      run: |
+        cd Egern/Rules
+        # 删除空行和注释行 (.list 和 .sgmodule)
+        find . -type f \( -name '*.list' -o -name '*.sgmodule' \) -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            sed -i '/^\s*$/d;/^#/d' "$file"
+          fi
+        done
+
+    # 添加规则名称和行数统计
+    - name: Edit Egern
+      run: |
+        cd Egern/Rules
+        find . -type f -name '*.list' -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            file_names=$(basename "$file" .list)
+            line_count=$(wc -l < "$file")
+            # 先插入文件名
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            # 再插入规则统计行
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            # 在第二行后添加一个空行
+            sed -i '2a\\' "$file"
+            echo "$file has been updated with rule name and count."
+          else
+            echo "$file not found."
+          fi
+        done
+
+        find . -type f -name 'README.md' -print0 | while IFS= read -r -d $'\0' readme; do
+          if [ -f "$readme" ]; then
+            # 删除和替换指定的字符串
+            sed -i -e '/\*\*MASTER分支 CDN (每日更新)\*\*/d' \
+                   -e '/\*\*MASTER分支 GHProxy (每日更新)\*\*/d' \
+                   -e '/\(不定时更新\)/d' \
+                   -e '/blackmatrix7\/ios_rule_script\/release\/rule\/Surge/d' \
+                   -e '/https:\/\/cdn.jsdelivr.net/d' \
+                   -e '/https:\/\/ghproxy.com/d' \
+                   -e 's|MASTER分支|分支|g' \
+                   -e 's|## Surge|## Egern|g' \
+                   -e 's|blackmatrix7/ios_rule_script/master/rule/Surge|Auniquesir/Tool/X/Egern/Rules|g' \
+                   -e 's|github.com/blackmatrix7/ios_rule_script/tree/master/rule/Surge|github.com/Auniquesir/Tool/tree/X/Egern/Rules|g' \
+                   -e 's|USER-AGENT|USER-AGENT(Egern支持)|g' \
+                   -e 's|TOTAL|TOTAL(仅供参考)|g' \
+                   -e 's|Surge定制化规则|Egern定制化规则|g' \
+                   -e 's|Auniquesir/Tool/X/Egern/Rules/\(.*\)\.list|Auniquesir/Tool/X/Egern/Rules/\1.list|g' \
+                   -e 's|-\([[:space:]]*\)\([A-Za-z0-9_]*\)\.list|-\1\2.list|' \
+                   "$readme"
+          else
+            echo "$readme not found."
+          fi
+        done
+
+    # 改名
+    - name: Rename Egern 
+      run: |
+        cd Egern/Rule || { echo "Failed to enter Egern/Rule"; exit 1; }
+        find . -type f -name '*.list' -exec sh -c 'mv "$1" "${1%.list}.yaml"' sh {} \; || { echo "Failed to rename .list files"; exit 1; }
+
+    # 适配 Egern 规则
+    - name: Edit Egern
+      run: |
+        cd Egern/Rule || { echo "Failed to enter Egern/Rule"; exit 1; }
+        find . -type f -name '*.yaml' -print0 | while IFS= read -r -d $'\0' file; do
+          echo "Processing file: $file"
+          if [ -f "$file" ]; then
+            # 适配
+            sed -i -e 's/, /,/g' \
+                   -e 's/;/# /g' \
+                   -e 's/host,/HOST,/g' \
+                   -e 's/host-/HOST-/g' \
+                   -e 's/-suffix/-SUFFIX/g' \
+                   -e 's/-keyword/-KEYWORD/g' \
+                   -e 's/ip-cidr/IP-CIDR/g' \
+                   -e 's/geoip/GEOIP/g' \
+                   -e 's/HOST,/DOMAIN,/g' \
+                   -e 's/HOST-/DOMAIN-/g' \
+                   -e 's/IP6-CIDR,/IP-CIDR6,/g' \
+                   -e 's/,extended-matching$//g' \
+                   -e 's/,REJECT$//g' \
+                   -e 's/,DIRECT$//g' \
+                   -e 's/,reject$//g' \
+                   -e 's/,direct$//g' \
+                   -e '/\(USER-AGENT\|OR\|AND\|NOT\),/ s/^/#/' \
+                   -e 's| \{1,\}//.*$||' \
+                   -e 's/,\*/,.*/g' \
+                   "$file" || { echo "Failed processing $file"; exit 1; }
+
+            # 处理规则
+            awk -F, '
+              /^DOMAIN,/ {domain_set = domain_set "\n- " $2}
+              /^DOMAIN-SUFFIX,/ {domain_suffix_set = domain_suffix_set "\n- " $2}
+              /^DOMAIN-KEYWORD,/ {domain_keyword_set = domain_keyword_set "\n- " $2}
+              /^DOMAIN-WILDCARD,/ {domain_regex_set = domain_regex_set "\n- " $2}
+              /^IP-CIDR,/ {ip_cidr_set = ip_cidr_set "\n- " $2}
+              /^IP-CIDR6,/ {ip_cidr6_set = ip_cidr6_set "\n- " $2}
+              /^IP-ASN,/ {asn_set = asn_set "\n- '\''" $2 "'\''"}
+              /^URL-REGEX,/ {url_regex_set = url_regex_set "\n- '\''" $2 "'\''"}
+            END {
+              if (length(domain_set) > 0) print "domain_set:" domain_set
+              if (length(domain_suffix_set) > 0) print "domain_suffix_set:" domain_suffix_set
+              if (length(domain_keyword_set) > 0) print "domain_keyword_set:" domain_keyword_set
+              if (length(domain_regex_set) > 0) print "domain_regex_set:" domain_regex_set
+              if (length(ip_cidr_set) > 0) print "ip_cidr_set:" ip_cidr_set
+              if (length(ip_cidr6_set) > 0) print "ip_cidr6_set:" ip_cidr6_set
+              if (length(asn_set) > 0) print "asn_set:" asn_set
+              if (length(url_regex_set) > 0) print "url_regex_set:" url_regex_set
+            }
+            ' "$file" > tmpfile && mv tmpfile "$file" || { echo "Failed processing $file"; exit 1; }
+
+          else
+            echo "$file not found."
+          fi
+        done
+
+    # 添加 no_resolve
+    - name: Add no_resolve
+      run: |
+        cd Egern/Rule || { echo "Failed to enter Egern/Rule"; exit 1; }
+        echo "Finding YAML files..."
+        find . -type f -name '*.yaml' -print0 | xargs -0 -I {} bash -c '
+          file="$1"
+          echo "Found file: $file"
+          if [ -f "$file" ]; then
+            # 检查是否有 asn_set: 或 ip_cidr_set:和ip_cidr6_set:，然后添加 no_resolve: true
+            if grep -qE "(^asn_set:|^ip_cidr_set:|^ip_cidr6_set:)" "$file"; then
+              if ! grep -q "^no_resolve: true" "$file"; then
+                sed -i "1i\\no_resolve: true" "$file" || { echo "Failed to edit $file"; exit 1; }
+              fi
+            fi
+            # 添加规则名称和行数统计
+            file_names=$(basename "$file" .yaml)
+            line_count=$(grep -c "^  - " "$file")
+            awk -v fname="$file_names" "NR==1 {print \"# 规则名称: \" fname} {print}" "$file" > tmpfile && mv tmpfile "$file"
+            awk -v count="$line_count" "NR==2 {print \"# 规则统计: \" count} {print}" "$file" > tmpfile && mv tmpfile "$file"
+            sed -i "2a\\" "$file"
+          else
+            echo "$file not found."
+          fi
+        ' _ {}
+  
+    - name: Edit README 
+      run: |
+        cd Egern/Rule
+        find . -type f -name 'README.md' -print0 | while IFS= read -r -d $'\0' readme; do
+          if [ -f "$readme" ]; then
+            # 删除和替换指定的字符串
+            sed -i -e '/\*\*MASTER分支 CDN (每日更新)\*\*/d' \
+                   -e '/\*\*MASTER分支 GHProxy (每日更新)\*\*/d' \
+                   -e '/\(不定时更新\)/d' \
+                   -e '/blackmatrix7\/ios_rule_script\/release\/rule\/QuantumultX/d' \
+                   -e '/https:\/\/cdn.jsdelivr.net/d' \
+                   -e '/https:\/\/ghproxy.com/d' \
+                   -e 's|MASTER分支|分支|g' \
+                   -e 's|## QuantumultX|## Egern|g' \
+                   -e 's|blackmatrix7/ios_rule_script/master/rule/QuantumultX|Auniquesir/Tool/X/Egern/Rule|g' \
+                   -e 's|github.com/blackmatrix7/ios_rule_script/tree/master/rule/QuantumultX|github.com/Auniquesir/Tool/tree/X/Egern/Rule|g' \
+                   -e 's|HOST|DOMAIN|g' \
+                   -e 's|IP6-CIDR|IP-CIDR6|g' \
+                   -e 's|USER-AGENT|USER-AGENT(Egern不支持)|g' \
+                   -e 's|TOTAL|TOTAL(仅供参考)|g' \
+                   -e 's|QuantumultX定制化规则|Egern定制化规则|g' \
+                   -e 's|Auniquesir/Tool/X/Egern/Rule/\(.*\)\.list|Auniquesir/Tool/X/Egern/Rule/\1.yaml|g' \
+                   -e 's|-\([[:space:]]*\)\([A-Za-z0-9_]*\)\.list|-\1\2.yaml|' \
+                   "$readme"
+          else
+            echo "$readme not found."
+          fi
+        done  
+
+###### Loon
+      # 适配 Loon 规则（删除空行和注释行）
+    - name: Edit Egern files
+      run: |
+        cd Loon/Rules
+        # 删除空行和注释行 (.list 和 .plugin)
+        find . -type f \( -name '*.list' -o -name '*.plugin' \) -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            sed -i '/^\s*$/d;/^#/d' "$file"
+          fi
+        done
+
+    # 添加规则名称和行数统计
+    - name: Edit Loon
+      run: |
+        cd Loon/Rules
+        find . -type f -name '*.list' -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            file_names=$(basename "$file" .list)
+            line_count=$(wc -l < "$file")
+            # 先插入文件名
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            # 再插入规则统计行
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            # 在第二行后添加一个空行
+            sed -i '2a\\' "$file"
+            echo "$file has been updated with rule name and count."
+          else
+            echo "$file not found."
+          fi
+        done
+
+        find . -type f -name 'README.md' -print0 | while IFS= read -r -d $'\0' readme; do
+          if [ -f "$readme" ]; then
+            sed -i -e '/\*\*MASTER分支 CDN (每日更新)\*\*/d' \
+                   -e '/\*\*MASTER分支 GHProxy (每日更新)\*\*/d' \
+                   -e '/\(不定时更新\)/d' \
+                   -e '/blackmatrix7\/ios_rule_script\/release\/rule\/Loon/d' \
+                   -e '/https:\/\/cdn.jsdelivr.net/d' \
+                   -e '/https:\/\/ghproxy.com/d' \
+                   -e 's|MASTER分支|分支|g' \
+                   -e 's|## Loon|## Loon|g' \
+                   -e 's|blackmatrix7/ios_rule_script/master/rule/Loon|Auniquesir/Tool/X/Loon/Rules|g' \
+                   -e 's|github.com/blackmatrix7/ios_rule_script/tree/master/rule/Loon|github.com/Auniquesir/Tool/tree/X/Loon/Rules|g' \
+                   -e 's|USER-AGENT|USER-AGENT(Loon支持)|g' \
+                   -e 's|TOTAL|TOTAL(仅供参考)|g' \
+                   -e 's|Loon定制化规则|Loon定制化规则|g' \
+                   -e 's|Auniquesir/Tool/X/Loon/Rules/\(.*\)\.list|Auniquesir/Tool/X/Loon/Rules/\1.list|g' \
+                   -e 's|-\([[:space:]]*\)\([A-Za-z0-9_]*\)\.list|-\1\2.list|' \
+                   "$readme"
+          fi
+        done
+
+      # Fork 插件、脚本
+    - name: Fork Plugin&Script
+      run: |
+        # rm -rf Loon/Plugin/*
+        # rm -rf Loon/Script/*
+        mkdir -p Loon/Plugin/
+        mkdir -p Loon/Script/
+        git clone https://gitlab.com/lodepuly/vpn_tool.git temp_directory
+        cp -r temp_directory/Tool/Loon/Plugin/* Loon/Plugin/
+        cp -r temp_directory/Resource/Script/* Loon/Script/
+        rm -rf temp_directory   
+
+      # 修改脚本链接
+    - name: Edit Loon/Plugin
+      run: |
+        cd Loon/Plugin
+        for file in *.plugin; do
+          if [ "$file" ] ; then
+            # 修改脚本链接
+            sed -i 's%gitlab\.com/lodepuly/vpn_tool/-/raw/master/Resource/Script%raw.githubusercontent.com/Auniquesir/Tool/X/Loon/Script%g' "$file"
+            
+            # 保留特定的行和其他行，保留空行
+            # awk '/^#!name =|^#!desc =|^#!icon =|^$|^[^#]/' "$file" > tmpfile
+            # 保留特定的行和其他行，删除空行
+            awk '/^#!name =|^#!desc =|^#!icon =/ { print } /^[[]/ { print ""; print; next } /^[^#]/ { if(NF) print }' "$file" > tmpfile
+            mv tmpfile "$file"
+
+            # 检查并删除临时文件
+            if [ -f tmpfile ]; then
+              rm tmpfile
+            fi
+          else
+            echo "$file not found."
+          fi
+        done
+        
+###### QuantumultX
+    # 适配 QuantumultX 规则 (删除空行和注释行)
+    - name: Edit QuantumultX 
+      run: |
+        cd QuantumultX/Rules
+        # 删除空行和注释行 (.list)
+        find . -type f -name '*.list' -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            sed -i '/^\s*$/d;/^#/d' "$file"
+          fi
+        done
+
+    # 添加规则名称和行数统计
+    - name: Edit QuantumultX files
+      run: |
+        cd QuantumultX/Rules
+        find . -type f -name '*.list' -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            file_names=$(basename "$file" .list)
+            line_count=$(wc -l < "$file")
+            
+            # 检查文件是否已经包含文件名
+            if ! grep -q ",${file_names}$" "$file"; then
+            
+              # 如果文件名未找到，则添加文件名
+              awk -v policy="$file_names" '!/^#|^ *$/ {print $0","policy; next} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            else
+              echo "文件 $file 已经包含策略 $file_names。未做更改。"
+            fi
+
+            # 添加规则名称和规则统计信息
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            
+            # 在文件第二行后添加空行
+            sed -i '2a\\' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        find . -type f -name 'README.md' -print0 | while IFS= read -r -d $'\0' readme; do
+          if [ -f "$readme" ]; then
+            sed -i -e '/\*\*MASTER分支 CDN (每日更新)\*\*/d' \
+                   -e '/\*\*MASTER分支 GHProxy (每日更新)\*\*/d' \
+                   -e '/\(不定时更新\)/d' \
+                   -e '/blackmatrix7\/ios_rule_script\/release\/rule\/QuantumultX/d' \
+                   -e '/https:\/\/cdn.jsdelivr.net/d' \
+                   -e '/https:\/\/ghproxy.com/d' \
+                   -e 's|MASTER分支|分支|g' \
+                   -e 's|## QuantumultX|## QuantumultX|g' \
+                   -e 's|blackmatrix7/ios_rule_script/master/rule/QuantumultX|Auniquesir/Tool/X/QuantumultX/Rules|g' \
+                   -e 's|github.com/blackmatrix7/ios_rule_script/tree/master/rule/QuantumultX|github.com/Auniquesir/Tool/tree/X/QuantumultX/Rules|g' \
+                   -e 's|USER-AGENT|USER-AGENT(QuantumultX支持)|g' \
+                   -e 's|TOTAL|TOTAL(仅供参考)|g' \
+                   -e 's|QuantumultX定制化规则|QuantumultX定制化规则|g' \
+                   -e 's|Auniquesir/Tool/X/QuantumultX/Rules/\(.*\)\.list|Auniquesir/Tool/X/QuantumultX/Rules/\1.list|g' \
+                   -e 's|-\([[:space:]]*\)\([A-Za-z0-9_]*\)\.list|-\1\2.list|' \
+                   "$readme"
+          fi
+        done
+ 
+###### Shadowrocket
+    # 适配 Shadowrocket 规则 (删除空行和注释行)
+    - name: Edit Shadowrocket files
+      run: |
+        cd Shadowrocket/Rules
+        # 删除空行和注释行 (.list 和 .sgmodule .conf)
+        find . -type f \( -name '*.list' -o -name '*.conf' -o -name '*.sgmodule' \) -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            sed -i '/^\s*$/d;/^#/d' "$file"
+          fi
+        done
+        
+    # 添加规则名称和行数统计
+    - name: Edit Shadowrocket
+      run: |
+        cd Shadowrocket/Rules
+        find . -type f -name '*.list' -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            file_names=$(basename "$file" .list)
+            line_count=$(wc -l < "$file")
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        find . -type f -name 'README.md' -print0 | while IFS= read -r -d $'\0' readme; do
+          if [ -f "$readme" ]; then
+            # 删除和替换指定的字符串
+            sed -i -e '/\*\*MASTER分支 CDN (每日更新)\*\*/d' \
+                   -e '/\*\*MASTER分支 GHProxy (每日更新)\*\*/d' \
+                   -e '/\(不定时更新\)/d' \
+                   -e '/blackmatrix7\/ios_rule_script\/release\/rule\/Shadowrocket/d' \
+                   -e '/https:\/\/cdn.jsdelivr.net/d' \
+                   -e '/https:\/\/ghproxy.com/d' \
+                   -e 's|MASTER分支|分支|g' \
+                   -e 's|## Shadowrocket|## Shadowrocket|g' \
+                   -e 's|blackmatrix7/ios_rule_script/master/rule/Shadowrocket|Auniquesir/Tool/X/Shadowrocket/Rules|g' \
+                   -e 's|github.com/blackmatrix7/ios_rule_script/tree/master/rule/Shadowrocket|github.com/Auniquesir/Tool/tree/X/Shadowrocket/Rules|g' \
+                   -e 's|USER-AGENT|USER-AGENT(Shadowrocket支持)|g' \
+                   -e 's|TOTAL|TOTAL(仅供参考)|g' \
+                   -e 's|Shadowrocket定制化规则|Shadowrocket定制化规则|g' \
+                   -e 's|Auniquesir/Tool/X/Shadowrocket/Rules/\(.*\)\.list|Auniquesir/Tool/X/Shadowrocket/Rules/\1.list|g' \
+                   -e 's|-\([[:space:]]*\)\([A-Za-z0-9_]*\)\.list|-\1\2.list|' \
+                   "$readme"
+          else
+            echo "$readme not found."
+          fi
+        done
+
+    # 适配 Stash 规则 (删除空行和注释行)
+    - name: Edit Stash files
+      run: |
+        cd Stash/Rules
+        # 删除空行和注释行
+        find . -type f \( -name '*.list' -o -name '*.yaml' -o -name '*.txt' \) -print0 | while IFS= read -r -d $'\0' file; do
+          sed -i '/^\s*$/d;/^#/d' "$file"
+        done
+
+    # 添加规则名称和行数统计
+    - name: Edit Stash
+      run: |
+        cd Stash/Rules
+        
+        add_rule_info() {
+          local file="$1"
+          local ext="${file##*.}"
+          local file_names=$(basename "$file" .$ext)
+          local line_count=$(wc -l < "$file")
+
+          # 使用 awk 在第一行插入规则名称
+          awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+
+          # 使用 awk 在第二行插入规则统计
+          awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+
+          # 使用 sed 在第二行后插入一个空行
+          sed -i '2a\\' "$file"
+        }
+
+        # 处理 .list、.yaml、.txt 文件
+        find . -type f \( -name '*.list' -o -name '*.yaml' -o -name '*.txt' \) -print0 | while IFS= read -r -d $'\0' file; do
+          add_rule_info "$file"
+        done
+
+        find . -type f -name 'README.md' -print0 | while IFS= read -r -d $'\0' readme; do
+          if [ -f "$readme" ]; then
+            # 删除和替换指定的字符串
+            sed -i -e '/\*\*MASTER分支 CDN (每日更新)\*\*/d' \
+                   -e '/\*\*MASTER分支 GHProxy (每日更新)\*\*/d' \
+                   -e '/\(不定时更新\)/d' \
+                   -e '/blackmatrix7\/ios_rule_script\/release\/rule\/Clash/d' \
+                   -e '/https:\/\/cdn.jsdelivr.net/d' \
+                   -e '/https:\/\/ghproxy.com/d' \
+                   -e 's|MASTER分支|分支|g' \
+                   -e 's|## Clash|## Stash|g' \
+                   -e 's|blackmatrix7/ios_rule_script/master/rule/Clash|Auniquesir/Tool/X/Stash/Rules|g' \
+                   -e 's|github.com/blackmatrix7/ios_rule_script/tree/master/rule/Clash|github.com/Auniquesir/Tool/tree/X/Stash/Rules|g' \
+                   -e 's|USER-AGENT|USER-AGENT(Stash支持)|g' \
+                   -e 's|TOTAL|TOTAL(仅供参考)|g' \
+                   -e 's|Clash定制化规则|Stash定制化规则|g' \
+                   -e 's|Auniquesir/Tool/X/Stash/Rules/\(.*\)\.yaml|Auniquesir/Tool/X/Stash/Rules/\1.yaml|g' \
+                   -e 's|-\([[:space:]]*\)\([A-Za-z0-9_]*\)\.yaml|-\1\2.yaml|' \
+                   "$readme"
+          else
+            echo "$readme not found."
+          fi
+        done 
+
+
+    # 拉取文件
+    - name: Clone rewrite
+      run: |
+        # 克隆规则仓库
+        git clone https://github.com/blackmatrix7/ios_rule_script.git temp_directory
+        
+        # 定义目标目录和相应的规则路径
+        declare -A rules=(
+          ["Egern/Rewrite"]="Surge"
+          ["Loon/Rewrite"]="Loon"
+          ["QuantumultX/Rewrite"]="QuantumultX"
+          ["Shadowrocket/Rewrite"]="Shadowrocket"
+          ["Stash/Rewrite"]="Stash"
+        )
+        
+        # 拷贝对应的规则文件
+        for dir in "${!rules[@]}"; do
+          mkdir -p "$dir"
+          if [ -d "temp_directory/rewrite/${rules[$dir]}" ]; then
+            cp -r temp_directory/rewrite/${rules[$dir]}/* "$dir/"
+          fi
+        done
+        # 清理临时目录
+        rm -rf temp_directory
+ 
+      # 编辑文件
+    - name: Edit Egern files
+      run: |
+        cd Egern/Rewrite
+        find . -type f -name '*.sgmodule' -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            sed -i '/^\s*$/d;/^#/d' "$file"
+          fi
+        done
+
+    # 添加规则名称和行数统计
+    - name: Edit Egern sgmodule
+      run: |
+        cd Egern/Rewrite
+        find . -type f -name '*.sgmodule' -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            file_names=$(basename "$file" .list)
+            line_count=$(wc -l < "$file")
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+        
+        find . -type f -name 'README.md' -print0 | while IFS= read -r -d $'\0' readme; do
+          if [ -f "$readme" ]; then
+            # 删除和替换指定的字符串
+            sed -i -e '/\*\*MASTER分支 CDN (每日更新)\*\*/d' \
+                   -e '/\*\*MASTER分支 GHProxy (每日更新)\*\*/d' \
+                   -e '/\(不定时更新\)/d' \
+                   -e '/blackmatrix7\/ios_rule_script\/release\/rewrite\/Surge/d' \
+                   -e '/https:\/\/cdn.jsdelivr.net/d' \
+                   -e '/https:\/\/ghproxy.com/d' \
+                   -e 's|MASTER分支|分支|g' \
+                   -e 's|## Surge|## Egern|g' \
+                   -e 's|blackmatrix7/ios_rule_script/master/rewrite/Surge|Auniquesir/Tool/X/Egern/Rewrite|g' \
+                   -e 's|github.com/blackmatrix7/ios_rule_script/tree/master/rewrite/Surge|github.com/Auniquesir/Tool/tree/X/Egern/Rewrite|g' \
+                   -e 's|USER-AGENT|USER-AGENT(Egern支持)|g' \
+                   -e 's|TOTAL|TOTAL(仅供参考)|g' \
+                   -e 's|Surge定制化规则|Egern定制化规则|g' \
+                   -e 's|Auniquesir/Tool/X/Egern/Rewrite/\(.*\)\.sgmodule|Auniquesir/Tool/X/Egern/Rewrite/\1.sgmodule|g' \
+                   -e 's|-\([[:space:]]*\)\([A-Za-z0-9_]*\)\.sgmodule|-\1\2.sgmodule|' \
+                   "$readme"
+          else
+            echo "$readme not found."
+          fi
+        done   
+
+    # 编辑文件
+    - name: Edit Loon files
+      run: |
+        cd Loon/Rewrite
+        find . -type f -name '*.plugin' -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            sed -i '/^\s*$/d;/^#/d' "$file"
+          fi
+        done
+
+    # 添加规则名称和行数统计
+    - name: Edit Loon plugin
+      run: |
+        cd Loon/Rewrite
+        find . -type f -name '*.plugin' -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            file_names=$(basename "$file" .list)
+            line_count=$(wc -l < "$file")
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        find . -type f -name 'README.md' -print0 | while IFS= read -r -d $'\0' readme; do
+          if [ -f "$readme" ]; then
+            # 删除和替换指定的字符串
+            sed -i -e '/\*\*MASTER分支 CDN (每日更新)\*\*/d' \
+                   -e '/\*\*MASTER分支 GHProxy (每日更新)\*\*/d' \
+                   -e '/\(不定时更新\)/d' \
+                   -e '/blackmatrix7\/ios_rule_script\/release\/rewrite\/Loon/d' \
+                   -e '/https:\/\/cdn.jsdelivr.net/d' \
+                   -e '/https:\/\/ghproxy.com/d' \
+                   -e 's|MASTER分支|分支|g' \
+                   -e 's|## Loon|## Loon|g' \
+                   -e 's|blackmatrix7/ios_rule_script/master/rewrite/Loon|Auniquesir/Tool/X/Loon/Rewrite|g' \
+                   -e 's|github.com/blackmatrix7/ios_rule_script/tree/master/rewrite/Loon|github.com/Auniquesir/Tool/tree/X/Loon/Rewrite|g' \
+                   -e 's|USER-AGENT|USER-AGENT(Loon支持)|g' \
+                   -e 's|TOTAL|TOTAL(仅供参考)|g' \
+                   -e 's|Loon定制化规则|Loon定制化规则|g' \
+                   -e 's|Auniquesirr/Tool/X/Loon/Rewrite/\(.*\)\.plugin|Auniquesir/Tool/X/Loon/Rewrite/\1.plugin|g' \
+                   -e 's|-\([[:space:]]*\)\([A-Za-z0-9_]*\)\.plugin|-\1\2.plugin|' \
+                   "$readme"
+          else
+            echo "$readme not found."
+          fi
+        done
+ 
+      # 编辑文件
+    - name: Edit QuantumultX files
+      run: |
+        cd QuantumultX/Rewrite
+        # Edit '.conf' files
+        find . -type f \( -name '*.list' -o -name '*.conf' \) -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            sed -i '/^\s*$/d;/^#/d' "$file"
+          fi
+        done
+
+        # Edit '.list' files
+    # 添加规则名称和行数统计
+    - name: Edit QuantumultX list
+      run: |
+        cd QuantumultX/Rewrite
+        find . -type f \( -name '*.list' -o -name '*.conf' \) -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            file_names=$(basename "$file" .list)
+            line_count=$(wc -l < "$file")
+            # 先插入文件名
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            # 再插入规则统计行
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            # 在第二行后添加一个空行
+            sed -i '2a\\' "$file"
+            echo "$file has been updated with rule name and count."
+          else
+            echo "$file not found."
+          fi
+        done
+
+        find . -type f -name 'README.md' -print0 | while IFS= read -r -d $'\0' readme; do
+          if [ -f "$readme" ]; then
+            # 删除和替换指定的字符串
+            sed -i -e '/\*\*MASTER分支 CDN (每日更新)\*\*/d' \
+                   -e '/\*\*MASTER分支 GHProxy (每日更新)\*\*/d' \
+                   -e '/\(不定时更新\)/d' \
+                   -e '/blackmatrix7\/ios_rule_script\/release\/rewrite\/QuantumultX/d' \
+                   -e '/https:\/\/cdn.jsdelivr.net/d' \
+                   -e '/https:\/\/ghproxy.com/d' \
+                   -e 's|MASTER分支|分支|g' \
+                   -e 's|## QuantumultX|## QuantumultX|g' \
+                   -e 's|blackmatrix7/ios_rule_script/master/rewrite/QuantumultX|Auniquesir/Tool/X/QuantumultX/Rewrite|g' \
+                   -e 's|github.com/blackmatrix7/ios_rule_script/tree/master/rewrite/QuantumultX|github.com/Auniquesir/Tool/tree/X/QuantumultX/Rewrite|g' \
+                   -e 's|USER-AGENT|USER-AGENT(QuantumultX支持)|g' \
+                   -e 's|TOTAL|TOTAL(仅供参考)|g' \
+                   -e 's|QuantumultX定制化规则|QuantumultX定制化规则|g' \
+                   -e 's|Auniquesir/Tool/X/QuantumultX/Rewrite/\(.*\)\.list|Auniquesir/Tool/X/QuantumultX/Rewrite/\1.list|g' \
+                   -e 's|-\([[:space:]]*\)\([A-Za-z0-9_]*\)\.list|-\1\2.list|' \
+                   -e 's|Auniquesir/Tool/X/QuantumultX/Rewrite/\(.*\)\.conf|Auniquesir/Tool/X/QuantumultX/Rewrite/\1.conf|g' \
+                   -e 's|-\([[:space:]]*\)\([A-Za-z0-9_]*\)\.conf|-\1\2.conf|' \
+                   "$readme"
+          else
+            echo "$readme not found."
+          fi
+        done  
+ 
+     # 编辑文件
+    - name: Edit Shadowrocket files
+      run: |
+        cd Shadowrocket/Rewrite
+        find . -type f -name '*.sgmodule' -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            sed -i '/^\s*$/d;/^#/d' "$file"
+          fi
+        done
+
+    # 添加规则名称和行数统计
+    - name: Edit Shadowrocket sgmodule
+      run: |
+        cd Shadowrocket/Rewrite
+        find . -type f -name '*.sgmodule' -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            file_names=$(basename "$file" .list)
+            line_count=$(wc -l < "$file")
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        find . -type f -name 'README.md' -print0 | while IFS= read -r -d $'\0' readme; do
+          if [ -f "$readme" ]; then
+            # 删除和替换指定的字符串
+            sed -i -e '/\*\*MASTER分支 CDN (每日更新)\*\*/d' \
+                   -e '/\*\*MASTER分支 GHProxy (每日更新)\*\*/d' \
+                   -e '/\(不定时更新\)/d' \
+                   -e '/blackmatrix7\/ios_rule_script\/release\/rewrite\/Shadowrocket/d' \
+                   -e '/https:\/\/cdn.jsdelivr.net/d' \
+                   -e '/https:\/\/ghproxy.com/d' \
+                   -e 's|MASTER分支|分支|g' \
+                   -e 's|## Shadowrocket|## Shadowrocket|g' \
+                   -e 's|blackmatrix7/ios_rule_script/master/rewrite/Shadowrocket|Auniquesir/Tool/X/Shadowrocket/Rewrite|g' \
+                   -e 's|github.com/blackmatrix7/ios_rule_script/tree/master/rewrite/Shadowrocket|github.com/Auniquesir/Tool/tree/X/Shadowrocket/Rewrite|g' \
+                   -e 's|USER-AGENT|USER-AGENT(Shadowrocket支持)|g' \
+                   -e 's|TOTAL|TOTAL(仅供参考)|g' \
+                   -e 's|Shadowrocket定制化规则|Shadowrocket定制化规则|g' \
+                   -e 's|Auniquesir/Tool/X/Shadowrocket/Rewrite/\(.*\)\.sgmodule|Auniquesir/Tool/X/Shadowrocket/Rewrite/\1.sgmodule|g' \
+                   -e 's|-\([[:space:]]*\)\([A-Za-z0-9_]*\)\.sgmodule|-\1\2.sgmodule|' \
+                   "$readme"
+          else
+            echo "$readme not found."
+          fi
+        done
+ 
+     # 编辑文件
+    - name: Edit Stash files
+      run: |
+        cd Stash/Rewrite
+        find . -type f -name '*.stoverride' -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            sed -i '/^\s*$/d;/^#/d' "$file"
+          fi
+        done
+
+    # 添加规则名称和行数统计
+    - name: Edit Stash stoverride
+      run: |
+        cd Stash/Rewrite
+        find . -type f -name '*.stoverride' -print0 | while IFS= read -r -d $'\0' file; do
+          if [ -f "$file" ]; then
+            file_names=$(basename "$file" .list)
+            line_count=$(wc -l < "$file")
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        find . -type f -name 'README.md' -print0 | while IFS= read -r -d $'\0' readme; do
+          if [ -f "$readme" ]; then
+            # 删除和替换指定的字符串
+            sed -i -e '/\*\*MASTER分支 CDN (每日更新)\*\*/d' \
+                   -e '/\*\*MASTER分支 GHProxy (每日更新)\*\*/d' \
+                   -e '/\(不定时更新\)/d' \
+                   -e '/blackmatrix7\/ios_rule_script\/release\/rewrite\/Stash/d' \
+                   -e '/https:\/\/cdn.jsdelivr.net/d' \
+                   -e '/https:\/\/ghproxy.com/d' \
+                   -e 's|MASTER分支|分支|g' \
+                   -e 's|## Stash|## Stash|g' \
+                   -e 's|blackmatrix7/ios_rule_script/master/rewrite/Stash|Auniquesir/Tool/X/Stash/Rewrite|g' \
+                   -e 's|github.com/blackmatrix7/ios_rule_script/tree/master/rewrite/Stash|github.com/Auniquesir/Tool/tree/X/Stash/Rewrite|g' \
+                   -e 's|USER-AGENT|USER-AGENT(Stash支持)|g' \
+                   -e 's|TOTAL|TOTAL(仅供参考)|g' \
+                   -e 's|Stash定制化规则|Stash定制化规则|g' \
+                   -e 's|Auniquesir/Tool/X/Stash/Rewrite/\(.*\)\.stoverride|Auniquesir/Tool/X/Stash/Rewrite/\1.stoverride|g' \
+                   -e 's|-\([[:space:]]*\)\([A-Za-z0-9_]*\)\.stoverride|-\1\2.stoverride|' \
+                   "$readme"
+          else
+            echo "$readme not found."
+          fi
+        done
+
+    # 添加并提交更改
+    - name: Add and Commit
+      run: |
+        if [[ -n $(git status -s) ]]; then
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "Auto Update $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M')"
+          git pull --rebase origin X
+          git push origin X
+        else
+          echo "No changes to commit."
+        fi
+
+    # 清理工作流
+    - name: Cleanup Workflow
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+        retain_days: 0
+        keep_minimum_runs: 2

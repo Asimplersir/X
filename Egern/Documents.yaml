@@ -1,0 +1,12 @@
+#!name=Documents
+#!desc=Documents解锁会员
+
+scriptings:
+- http_request:
+    name: documents
+    match: ^https:\/\/license\.pdfexpert\.com\/api\/2\.0\/documents\/subscription\/refresh
+    script_url: https://raw.githubusercontent.com/89996462/Quantumult-X/main/ycdz/documents.js
+    body_required: true
+mitm:
+  hostnames:
+  - license.pdfexpert.com

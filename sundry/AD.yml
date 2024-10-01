@@ -1,0 +1,94 @@
+name: Fork AdBlock
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "55 23,11 * * *"
+
+jobs:
+  ForkAdRules:
+    runs-on: ubuntu-latest
+    env:
+      TZ: 'Asia/Shanghai'
+    
+    steps:
+    - name: Checkout target repository
+      uses: actions/checkout@v4.1.7
+    
+    - name: Create directories
+      run: mkdir -p temp Rules
+
+    - name: Clone and Edit Lists
+      run: |
+        declare -A urls=(
+          ["AdBlockX.list"]="https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules.list"
+          ["AntiadX.list"]="https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-surge.txt"
+          ["AdBlock.list"]="https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules.list"
+          ["Antiad.list"]="https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-surge.txt"
+          ["AdBlock.yaml"]="https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules.list"
+          ["Antiad.yaml"]="https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-surge.txt"
+        )
+
+        for file in "${!urls[@]}"; do
+          curl -sSL -o "temp/$file" "${urls[$file]}"
+        done
+
+        creation_date=$(TZ='Asia/Shanghai' date +"%Y-%m-%d %H:%M:%S")
+
+        process_file() {
+          local file=$1
+          local transformation=$2
+          local header=$3
+
+          sed -i -e '/^\s*[#;]/d' -e '/^$/d' "temp/$file"
+          eval "$transformation"
+          rule_count=$(wc -l < "temp/$file" | tr -d ' ')
+          echo "# 规则名称: $header" > "Rules/$file"
+          echo "# 规则数量: $rule_count" >> "Rules/$file"
+          echo "# 更新时间: $creation_date" >> "Rules/$file"
+          cat "temp/$file" >> "Rules/$file"
+          sed -i '3a\\' "Rules/$file"
+        }
+
+        for file in AdBlockX.list AntiadX.list; do
+          transformation='sed -i -e "s/DOMAIN-SUFFIX,/HOST-SUFFIX,/g" temp/$file'
+          process_file "$file" "$transformation" "AdBlock"
+        done
+
+        for file in AdBlock.list Antiad.list; do
+          process_file "$file" "" "AdBlock"
+        done
+
+        for file in AdBlock.yaml; do
+          transformation='sed -i -e "s/DOMAIN-SUFFIX,/- /g" temp/$file && sed -i "1i\no_resolve: true" temp/$file && sed -i "2i\domain_set:" temp/$file && sed -i "3i\domain_suffix_set:" temp/$file'
+          process_file "$file" "$transformation" "AdBlock"
+        done
+
+        for file in Antiad.yaml; do
+          transformation='sed -i -e "s/DOMAIN-SUFFIX,/  - DOMAIN,/g" temp/$file && sed -i "1i\payload:" temp/$file'
+          process_file "$file" "$transformation" "AdBlock"
+        done
+
+        rm temp/*.list temp/*.yaml
+
+    - name: Cleanup temp directory
+      run: rm -rf temp
+        
+    - name: Add and Commit
+      run: |
+        if [[ -n $(git status -s) ]]; then
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "Auto Update $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M')"
+          git pull --rebase origin X
+          git push origin X  
+        else
+          echo "No changes to commit."
+        fi
+
+    - name: Cleanup Workflow
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+        retain_days: 0
+        keep_minimum_runs: 2

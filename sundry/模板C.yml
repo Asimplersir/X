@@ -1,0 +1,339 @@
+
+
+    - name: Tools
+      run: |
+        curl https://raw.githubusercontent.com/Auniquesir/Tools/X/Script/Fork.sh | sh
+
+    - name: Clash
+      run: |
+        cd Tools-repo/Clash/Ruleset
+        for file in *.yaml; do
+          if [ -f "$file" ]; then
+            sed -i -e '/^\s*[#;]/d' -e '/^$/d' $file
+            sed -i -e '/PROCESS-NAME\|URL-REGEX\|USER-AGENT/d' $file
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in AdBlock.yaml DIRECT.yaml GreatFireWall.yaml PROXY.yaml REJECT.yaml; do
+          if [ -f "$file" ]; then
+            filename=$(basename "$file" .yaml)
+            awk -v fname="$filename" 'NR==1 {print "# 规则名称:" fname} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk 'NR==2 {print "# 规则统计:00000"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+            line_count=$(tail -n +5 "$file" | wc -l)
+            sed -i "2s/[0-9]\+/$line_count/" "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in Advertising.yaml *CIDR.yaml CNCIDR[46].yaml; do
+          if [ -f "$file" ]; then
+            filename=$(basename "$file" .yaml)
+            awk -v fname="$filename" 'NR==1 {print "# 规则名称:" fname} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk 'NR==2 {print "# 规则统计:00000"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+            awk 'NR==4 {print "payload:"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk '!/\/\/|#|payload:|^ *$/ {print "  - \x27" $0 "\x27"; next} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            line_count=$(tail -n +5 "$file" | wc -l)
+            sed -i "2s/[0-9]\+/$line_count/" "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in *.yaml; do
+          if [ -f "$file" ]; then
+            if [ "$file" != "AdBlock.yaml" ] && [ "$file" != "Advertising.yaml" ] && [ "$file" != "DIRECT.yaml" ] && [ "$file" != "GreatFireWall.yaml" ] && [ "$file" != "PROXY.yaml" ] && [ "$file" != "REJECT.yaml" ] && [[ ! "$file" == *CIDR.yaml ]] && [[ ! "$file" == CNCIDR*.yaml ]]; then
+            filename=$(basename "$file" .yaml)
+            awk -v fname="$filename" 'NR==1 {print "# 规则名称:" fname} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk 'NR==2 {print "# 规则统计:00000"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+            awk 'NR==4 {print "payload:"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk '!/\/\/|#|payload:|^ *$/ {print "  - " $0; next} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            line_count=$(tail -n +5 "$file" | wc -l)
+            sed -i "2s/[0-9]\+/$line_count/" "$file"
+            fi
+          else
+            echo "$file not found."
+          fi
+        done
+
+    - name: Egern
+      run: |
+        cd Tools-repo/Egern/Ruleset
+        for file in *.yaml; do
+          if [ -f "$file" ]; then
+            sed -i -e '/^\s*[#;]/d' -e '/^$/d' $file
+            sed -i -e '/PROCESS-NAME\|URL-REGEX\|USER-AGENT/d' $file
+            awk '/^DOMAIN,/ && !added {print "domain_set:"; added=1} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk '/^DOMAIN-SUFFIX,/ && !added {print "domain_suffix_set:"; added=1} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk '/^DOMAIN-KEYWORD,/ && !added {print "domain_keyword_set:"; added=1} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk '/^IP-CIDR,/ && !added {print "ip_cidr_set:"; added=1} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk '/^IP-CIDR6,/ && !added {print "ip_cidr6_set:"; added=1} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk '/^IP-ASN,/ && !added {print "asn_set:"; added=1} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk '/^GEOIP,/ && !added {print "geoip_set:"; added=1} {print}' "$file" > tmpfile && mv tmpfile "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in *CIDR.yaml CNCIDR[46].yaml; do
+          if [ -f "$file" ]; then
+            awk '/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\/[0-9]+/ && !added {print "ip_cidr_set:"; added=1} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk '/^[a-fA-F0-9]+:|([a-fA-F0-9]+:+)+[a-fA-F0-9]+\/[0-9]+/ && !added {print "ip_cidr6_set:"; added=1} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            sed -i -E '/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\/[0-9]+/s/^/  - /' "$file"
+            sed -i -E '/^[a-fA-F0-9]+:|([a-fA-F0-9]+:+)+[a-fA-F0-9]+\/[0-9]+/s/^/  - /' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in *.yaml; do
+          if [ -f "$file" ]; then
+            filename=$(basename "$file" .yaml)
+            awk -v fname="$filename" 'NR==1 {print "# 规则名称:" fname} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk 'NR==2 {print "# 规则统计:00000"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+            if grep -qE '^IP-(ASN|CIDR|CIDR6).*no-resolve$' "$file"; then
+            sed -i '4i\no_resolve: true' "$file"
+          fi
+            sed -i -E 's/^(DOMAIN|DOMAIN-SUFFIX|DOMAIN-KEYWORD|IP-CIDR|IP-CIDR6|IP-ASN|GEOIP),/  - /g' "$file"
+            sed -i 's/,no-resolve//g' "$file"
+            line_count=$(awk 'NR>=4 && /  - / {count++} END {print count}' "$file")
+            sed -i "2s/[0-9]\+/$line_count/" "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+        
+    - name: Loon
+      run: |
+        cd Tools-repo/Loon/Ruleset
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            sed -i -e '/^\s*[#;]/d' -e '/^$/d' $file
+            sed -i -e '/PROCESS-NAME\|URL-REGEX\|USER-AGENT/d' $file
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in *CIDR.list CNCIDR[46].list; do
+          if [ -f "$file" ]; then
+            sed -i -E '/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\/[0-9]+/s/^/IP-CIDR,/' "$file"
+            sed -i -E '/^[a-fA-F0-9]+:|([a-fA-F0-9]+:+)+[a-fA-F0-9]+\/[0-9]+/s/^/IP-CIDR6,/' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            filename=$(basename "$file" .list)
+            awk -v fname="$filename" 'NR==1 {print "# 规则名称:" fname} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk 'NR==2 {print "# 规则统计:00000"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+            line_count=$(tail -n +4 "$file" | wc -l)
+            sed -i "2s/[0-9]\+/$line_count/" "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+    - name: QuantumultX
+      run: |
+        cd Tools-repo/QuantumultX/Ruleset
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            sed -i -e '/^\s*[#;]/d' -e '/^$/d' $file
+            sed -i -e '/PROCESS-NAME\|URL-REGEX\|USER-AGENT/d' $file
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in *CIDR.list CNCIDR[46].list; do
+          if [ -f "$file" ]; then
+            sed -i -E '/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\/[0-9]+/s/^/IP-CIDR,/' "$file"
+            sed -i -E '/^[a-fA-F0-9]+:|([a-fA-F0-9]+:+)+[a-fA-F0-9]+\/[0-9]+/s/^/IP6-CIDR,/' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            sed -i -e 's/DOMAIN,/HOST,/g' -e 's/DOMAIN-SUFFIX,/HOST-SUFFIX,/g' -e 's/DOMAIN-KEYWORD,/HOST-KEYWORD,/g' -e 's/IP-CIDR6,/IP6-CIDR,/g' "$file"
+            sed -i 's/,no-resolve//g' "$file"
+            filename=$(basename "$file" .list)
+            awk -v policy="$filename" '!/\/\/|#|^ *$/ {print $0","policy; next} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            filename=$(basename "$file" .list)
+            awk -v fname="$filename" 'NR==1 {print "# 规则名称:" fname} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk 'NR==2 {print "# 规则统计:00000"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+            line_count=$(tail -n +4 "$file" | wc -l)
+            sed -i "2s/[0-9]\+/$line_count/" "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+    - name: Shadowrocket
+      run: |
+        cd Tools-repo/Shadowrocket/Ruleset
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            sed -i -e '/^\s*[#;]/d' -e '/^$/d' $file
+            sed -i -e '/PROCESS-NAME\|URL-REGEX\|USER-AGENT/d' $file
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in *CIDR.list CNCIDR[46].list; do
+          if [ -f "$file" ]; then
+            sed -i -E '/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\/[0-9]+/s/^/IP-CIDR,/' "$file"
+            sed -i -E '/^[a-fA-F0-9]+:|([a-fA-F0-9]+:+)+[a-fA-F0-9]+\/[0-9]+/s/^/IP-CIDR6,/' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            filename=$(basename "$file" .list)
+            awk -v fname="$filename" 'NR==1 {print "# 规则名称:" fname} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk 'NR==2 {print "# 规则统计:00000"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+            line_count=$(tail -n +4 "$file" | wc -l)
+            sed -i "2s/[0-9]\+/$line_count/" "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+    - name: Stash
+      run: |
+        cd Tools-repo/Stash/Ruleset
+        for file in *.yaml; do
+          if [ -f "$file" ]; then
+            sed -i -e '/^\s*[#;]/d' -e '/^$/d' $file
+            sed -i -e '/PROCESS-NAME\|URL-REGEX\|USER-AGENT/d' $file
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in AdBlock.yaml DIRECT.yaml GreatFireWall.yaml PROXY.yaml REJECT.yaml; do
+          if [ -f "$file" ]; then
+            filename=$(basename "$file" .yaml)
+            awk -v fname="$filename" 'NR==1 {print "# 规则名称:" fname} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk 'NR==2 {print "# 规则统计:00000"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+            line_count=$(tail -n +5 "$file" | wc -l)
+            sed -i "2s/[0-9]\+/$line_count/" "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in Advertising.yaml *CIDR.yaml CNCIDR[46].yaml; do
+          if [ -f "$file" ]; then
+            filename=$(basename "$file" .yaml)
+            awk -v fname="$filename" 'NR==1 {print "# 规则名称:" fname} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk 'NR==2 {print "# 规则统计:00000"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+            awk 'NR==4 {print "payload:"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk '!/\/\/|#|payload:|^ *$/ {print "  - \x27" $0 "\x27"; next} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            line_count=$(tail -n +5 "$file" | wc -l)
+            sed -i "2s/[0-9]\+/$line_count/" "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in *.yaml; do
+          if [ -f "$file" ]; then
+            if [ "$file" != "AdBlock.yaml" ] && [ "$file" != "Advertising.yaml" ] && [ "$file" != "DIRECT.yaml" ] && [ "$file" != "GreatFireWall.yaml" ] && [ "$file" != "PROXY.yaml" ] && [ "$file" != "REJECT.yaml" ] && [[ ! "$file" == *CIDR.yaml ]] && [[ ! "$file" == CNCIDR*.yaml ]]; then
+            filename=$(basename "$file" .yaml)
+            awk -v fname="$filename" 'NR==1 {print "# 规则名称:" fname} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk 'NR==2 {print "# 规则统计:00000"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+            awk 'NR==4 {print "payload:"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk '!/\/\/|#|payload:|^ *$/ {print "  - " $0; next} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            line_count=$(tail -n +5 "$file" | wc -l)
+            sed -i "2s/[0-9]\+/$line_count/" "$file"
+            fi
+          else
+            echo "$file not found."
+          fi
+        done
+
+    - name: Surge
+      run: |
+        cd Tools-repo/Surge/Ruleset
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            sed -i -e '/^\s*[#;]/d' -e '/^$/d' $file
+            sed -i -e '/PROCESS-NAME\|URL-REGEX\|USER-AGENT/d' $file
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in *CIDR.list CNCIDR[46].list; do
+          if [ -f "$file" ]; then
+            sed -i -E '/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\/[0-9]+/s/^/IP-CIDR,/' "$file"
+            sed -i -E '/^[a-fA-F0-9]+:|([a-fA-F0-9]+:+)+[a-fA-F0-9]+\/[0-9]+/s/^/IP-CIDR6,/' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            filename=$(basename "$file" .list)
+            awk -v fname="$filename" 'NR==1 {print "# 规则名称:" fname} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            awk 'NR==2 {print "# 规则统计:00000"} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+            line_count=$(tail -n +4 "$file" | wc -l)
+            sed -i "2s/[0-9]\+/$line_count/" "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+       

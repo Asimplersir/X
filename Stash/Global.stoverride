@@ -1,0 +1,22 @@
+name: "Global规则"
+desc: "Global分流规则"
+
+rule-providers:
+  Global:
+    type: http
+    behavior: classical
+    url: "https://raw.githubusercontent.com/Asimplersir/Rules/X/Stash/Rule/Global/Global.yaml"
+    path: ./ruleset/Global.yaml
+    interval: 86400
+
+  Global_Domain:
+    type: http
+    behavior: domain
+    url: "https://raw.githubusercontent.com/Asimplersir/Rules/X/Stash/Rule/Global/Global_Domain.yaml"
+    path: ./ruleset/Global_Domain.yaml
+    interval: 86400
+
+rules:
+  - RULE-SET,Global,Proxy
+  - RULE-SET,Global_Domain,Proxy
+

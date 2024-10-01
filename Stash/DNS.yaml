@@ -1,0 +1,40 @@
+mixin:
+  dns:
+    enable: true
+    # 监听本地的53端口
+    listen: 127.0.0.1:53
+    # 起用 IPV6
+    ipv6: true
+    # 使用 fake-ip 模式
+    enhanced-mode: fake-ip
+    # 使用hosts
+    use-hosts: true
+    # nameserver 裡 DoH / DoT 的域名使用 default-nameserver 請求
+    default-nameserver:
+      - 223.5.5.5 #阿里云DNS
+      - 223.6.6.6 #阿里云DNS
+      - 1.0.0.1 #Cloudflare DNS
+    fake-ip-range: 198.18.0.1/16
+    fake-ip-filter: #这里的域名永远使用真实ip
+      - "dns.msftncsi.com"
+      - "www.msftncsi.com"
+      - "www.msftconnecttest.com"
+    # 國內域名使用 nameserver 請求
+    nameserver:
+      - https://dns.alidns.com/dns-query #阿里DNS
+    # 國外域名使用 fallback 請求 (没有被污染的DNS)
+    fallback:
+      - https://cloudflare-dns.com/dns-query #Cloudflare DNS
+      - https://freedns.controld.com/p0 #Control DNS
+      - https://doh.dns.sb/dns-query #DNS.SB
+      - https://dns.twnic.tw/dns-query #台灣網路資訊中心 DNS
+    # fallback请求过滤
+    fallback-filter:
+      geoip: true
+      ip-cidr:
+        - 240.0.0.0/4
+        - 127.0.0.1/8
+        - 0.0.0.0/32
+      domain:
+        - "+.github.com"
+        - "+.youtube.com"

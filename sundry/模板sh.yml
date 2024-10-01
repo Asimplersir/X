@@ -1,0 +1,633 @@
+
+name: Remake Edit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 20 * * *"
+  
+jobs:
+  RemakeEdit:
+    runs-on: ubuntu-latest
+    env:
+      TZ: 'Asia/Shanghai'
+      SING_BOX_VERSION: 1.10.0-beta.11  # 你可以根据需要修改版本号
+    
+    steps: 
+    - name: Checkout target repository
+      uses: actions/checkout@v4.1.7
+      with:
+        repository: Asimplersir/Tools
+        path: Tools-repo
+        
+    # Run Forks Script
+    - name: Run Forks Script
+      run: |
+        curl https://raw.githubusercontent.com/Asimplersir/Tools/X/Script/Forks.sh | sh
+
+###### Egern
+      # 适配 Egern 规则
+    - name: Edit Egern/Rules
+      run: |
+        cd Tools-repo/Egern/Rules
+        for file in *.list; do
+          if [ -f "$file" ]; then       
+            sed -i -e 's/, /,/g' \
+                   -e 's/;/# /g' \
+                   -e 's/host,/HOST,/g' \
+                   -e 's/host-/HOST-/g' \
+                   -e 's/-suffix/-SUFFIX/g' \
+                   -e 's/-keyword/-KEYWORD/g' \
+                   -e 's/ip-cidr/IP-CIDR/g' \
+                   -e 's/-wildcard/-WILDCARD/g' \
+                   -e 's/geoip/GEOIP/g' \
+                   -e 's/HOST,/DOMAIN,/g' \
+                   -e 's/HOST-/DOMAIN-/g' \
+                   -e 's/IP6-CIDR,/IP-CIDR6,/g' \
+                   -e 's/,REJECT$//g' \
+                   -e 's/,DIRECT$//g' \
+                   -e 's/,reject$//g' \
+                   -e 's/,direct$//g' \
+                   -e '/# 更新：/d' \
+                   -e '/# AUTHOR:/d' \
+                   -e '/# REPO:/d' \
+                   -e '/# UPDATED:/d' \
+                   -e '/# 数目: /d' \
+                   -e '/# 规则: /d' \
+                   -e '/404: Not Found/d' \
+                   -e '/^\s*[#;]/d' \
+                   -e '/^$/d' \
+                   "$file"
+            # 如果为IP规则且不包含no-resolve 则添加no-resolve
+            awk '/^IP-/ && !/,no-resolve/ {print $0",no-resolve"; next} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+        
+    # Edit Egern files
+    - name: Edit Egern
+      run: |
+        cd Tools-repo/Egern/Rules
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            file_names=$(basename "$file" .list)
+            line_count=$(wc -l < "$file")
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+###### Egern     
+      # 适配 Egern 规则
+    - name: Edit Egern/Rules
+      run: |
+        cd Tools-repo/Egern/Rules
+        for file in *.yaml; do
+          if [ -f "$file" ]; then
+            # 适配
+            sed -i -e 's/, /,/g' \
+                   -e 's/;/# /g' \
+                   -e 's/host,/HOST,/g' \
+                   -e 's/host-/HOST-/g' \
+                   -e 's/-suffix/-SUFFIX/g' \
+                   -e 's/-keyword/-KEYWORD/g' \
+                   -e 's/ip-cidr/IP-CIDR/g' \
+                   -e 's/geoip/GEOIP/g' \
+                   -e 's/HOST,/DOMAIN,/g' \
+                   -e 's/HOST-/DOMAIN-/g' \
+                   -e 's/IP6-CIDR,/IP-CIDR6,/g' \
+                   -e 's/,extended-matching$//g' \
+                   -e 's/,REJECT$//g' \
+                   -e 's/,DIRECT$//g' \
+                   -e 's/,reject$//g' \
+                   -e 's/,direct$//g' \
+                   -e '/\(USER-AGENT\|OR\|AND\|NOT\|PROCESS-NAME\),/ s/^/#/' \
+                   -e 's| \{1,\}//.*$||' \
+                   -e 's/,\*/,.*/g' \
+                   -e '/# 更新：/d' \
+                   -e '/# AUTHOR:/d' \
+                   -e '/# REPO:/d' \
+                   -e '/# UPDATED:/d' \
+                   -e '/404: Not Found/d' \
+                   -e '/^\s*[#;]/d' \
+                   -e '/^$/d' \
+                   "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+        
+    # Edit Egern files
+    - name: Edit Egern
+      run: |
+        cd Tools-repo/Egern/Rules
+        declare -A rules_map=(
+          ["^DOMAIN,"]="domain_set:"
+          ["^DOMAIN-SUFFIX,"]="domain_suffix_set:"
+          ["^DOMAIN-KEYWORD,"]="domain_keyword_set:"
+          ["^IP-CIDR,"]="ip_cidr_set:"
+          ["^IP-CIDR6,"]="ip_cidr6_set:"
+          ["^IP-ASN,"]="asn_set:"
+          ["^GEOIP,"]="geoip_set:"
+        )
+
+        for file in *.yaml; do
+          if [ -f "$file" ]; then
+            for pattern in "${!rules_map[@]}"; do
+              replacement="${rules_map[$pattern]}"
+              awk "/$pattern/ && !added {print \"$replacement\"; added=1} {print}" "$file" > tmpfile && mv tmpfile "$file"
+            done
+          else
+            echo "$file not found."
+          fi
+        done
+
+        for file in *.yaml; do
+          if [ -f "$file" ]; then
+            if grep -qE '^IP-(ASN|CIDR|CIDR6).*no-resolve$' "$file"; then
+            sed -i '1i\no_resolve: true' "$file"
+            fi
+            sed -i -E 's/^(DOMAIN|DOMAIN-SUFFIX|DOMAIN-KEYWORD|IP-CIDR|IP-CIDR6|IP-ASN|GEOIP),/  - /g' "$file"
+            sed -i 's/,no-resolve//g' "$file"
+            file_names=$(basename "$file" .yaml)
+            line_count=$(grep -c '^  - ' "$file")
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+            
+###### Loon
+      # 适配 Loon 规则
+    - name: Edit Loon/Rules
+      run: |
+        cd Tools-repo/Loon/Rules
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            sed -i -e 's/, /,/g' \
+                   -e 's/;/# /g' \
+                   -e 's/host,/HOST,/g' \
+                   -e 's/host-/HOST-/g' \
+                   -e 's/-suffix/-SUFFIX/g' \
+                   -e 's/-keyword/-KEYWORD/g' \
+                   -e 's/ip-cidr/IP-CIDR/g' \
+                   -e 's/geoip/GEOIP/g' \
+                   -e 's/HOST,/DOMAIN,/g' \
+                   -e 's/HOST-/DOMAIN-/g' \
+                   -e 's/IP6-CIDR,/IP-CIDR6,/g' \
+                   -e 's/,REJECT$//g' \
+                   -e 's/,DIRECT$//g' \
+                   -e 's/,reject$//g' \
+                   -e 's/,direct$//g' \
+                   -e 's/,extended-matching$//g' \
+                   -e '/\(PROCESS-NAME\),/ s/^/#/' \
+                   -e '/# 更新：/d' \
+                   -e '/# AUTHOR:/d' \
+                   -e '/# REPO:/d' \
+                   -e '/# UPDATED:/d' \
+                   -e '/404: Not Found/d' \
+                   -e '/^\s*[#;]/d' \
+                   -e '/^$/d' \
+                   "$file"
+            # 如果为IP规则且不包含no-resolve 则添加no-resolve
+            awk '/^IP-/ && !/,no-resolve/ {print $0",no-resolve"; next} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+        
+    # Edit Loon files
+    - name: Edit Loon
+      run: |
+        cd Tools-repo/Loon/Rules
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            file_names=$(basename "$file" .list)
+            line_count=$(wc -l < "$file")
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+      # Fork 可莉插件、脚本
+    - name: Fork lodepuly Plugin&Script
+      run: |
+        rm -rf Tools-repo/Loon/Plugin/*
+        rm -rf Tools-repo/Loon/Script/*
+        mkdir -p Tools-repo/Loon/Plugin
+        git clone https://gitlab.com/lodepuly/vpn_tool.git lodepuly_Tmp
+        cp -r lodepuly_Tmp/Tool/Loon/Plugin/* Tools-repo/Loon/Plugin
+        cp -r lodepuly_Tmp/Resource/Script/* Tools-repo/Loon/Script/
+        rm -rf lodepuly_Tmp   
+
+      # 修改脚本链接
+    - name: Edit Loon/Plugin
+      run: |
+        cd Tools-repo/Loon/Plugin
+        for file in *.plugin; do
+          if [ "$file" ] ; then
+            # 修改脚本链接
+            sed -i 's/gitlab\.com\/lodepuly\/vpn_tool\/-\/raw\/master\/Resource\/Script/raw.githubusercontent\.com\/Auniquesir\/Tools\/X\/Loon\/Script/g' "$file"
+
+            # 保留特定的行和其他行，保留空行
+            # awk '/^#!name =|^#!desc =|^#!icon =|^$|^[^#]/' "$file" > tmpfile
+            # 保留特定的行和其他行，删除空行
+            awk '/^#!name =|^#!desc =|^#!icon =/ { print } /^[[]/ { print ""; print; next } /^[^#]/ { if(NF) print }' "$file" > tmpfile
+            mv tmpfile "$file"
+
+            # 检查并删除临时文件
+            if [ -f tmpfile ]; then
+              rm tmpfile
+            fi
+          else
+            echo "$file not found."
+          fi
+        done
+
+###### QuantumultX
+      # 适配 QuantumultX 规则
+    - name: Edit QuantumultX/Rules
+      run: |
+        cd Tools-repo/QuantumultX/Rules
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            sed -i -e 's/, /,/g' \
+                   -e 's/,REJECT$//g' \
+                   -e 's/,DIRECT$//g' \
+                   -e 's/,PROXY$//g' \
+                   -e 's/,reject$//g' \
+                   -e 's/,direct$//g' \
+                   -e 's/,proxy$//g' \
+                   -e 's/DOMAIN,/HOST,/g' \
+                   -e 's/DOMAIN-SUFFIX,/HOST-SUFFIX,/g' \
+                   -e 's/DOMAIN-KEYWORD,/HOST-KEYWORD,/g' \
+                   -e 's/DOMAIN-WILDCARD,/HOST-WILDCARD,/g' \
+                   -e 's/IP-CIDR6,/IP6-CIDR,/g' \
+                   -e 's/,no-resolve//g' \
+                   -e 's/,extended-matching$//g' \
+                   -e '/\(OR\|AND\|NOT\|PROCESS-NAME\|URL-REGEX\),/ s/^/#/' \
+                   -e 's| \{1,\}//.*$||' \
+                   -e '/# 更新：/d' \
+                   -e '/# AUTHOR:/d' \
+                   -e '/# REPO:/d' \
+                   -e '/# UPDATED:/d' \
+                   -e '/404: Not Found/d' \
+                   -e '/^\s*[#;]/d' \
+                   -e '/^$/d' \
+                   "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+        
+    # Edit QuantumultX files
+    - name: Edit QuantumultX
+      run: |
+        cd Tools-repo/QuantumultX/Rules
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            file_names=$(basename "$file" .list)
+            line_count=$(wc -l < "$file")
+            
+            # 检查文件是否已经包含文件名
+            if ! grep -q ",${file_names}$" "$file"; then
+              # 如果文件名未找到，则添加文件名
+              awk -v policy="$file_names" '!/^#|^ *$/ {print $0","policy; next} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            else
+              echo "文件 $file 已经包含策略 $file_names。未做更改。"
+            fi
+
+            # 添加规则名称和规则统计信息
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            
+            # 在文件第二行后添加空行
+            sed -i '2a\\' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+###### Shadowrocket
+      # 适配 Shadowrocket 规则
+    - name: Edit Shadowrocket/Rules
+      run: |
+        cd Tools-repo/Shadowrocket/Rules
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            sed -i -e 's/, /,/g' \
+                   -e 's/;/# /g' \
+                   -e 's/host,/HOST,/g' \
+                   -e 's/host-/HOST-/g' \
+                   -e 's/-suffix/-SUFFIX/g' \
+                   -e 's/-keyword/-KEYWORD/g' \
+                   -e 's/ip-cidr/IP-CIDR/g' \
+                   -e 's/geoip/GEOIP/g' \
+                   -e 's/HOST,/DOMAIN,/g' \
+                   -e 's/HOST-/DOMAIN-/g' \
+                   -e 's/IP6-CIDR,/IP-CIDR6,/g' \
+                   -e 's/,REJECT$//g' \
+                   -e 's/,DIRECT$//g' \
+                   -e 's/,reject$//g' \
+                   -e 's/,direct$//g' \
+                   -e 's/,extended-matching$//g' \
+                   -e '/\(PROCESS-NAME\),/ s/^/#/' \
+                   -e '/# 更新：/d' \
+                   -e '/# AUTHOR:/d' \
+                   -e '/# REPO:/d' \
+                   -e '/# UPDATED:/d' \
+                   -e '/404: Not Found/d' \
+                   -e '/^\s*[#;]/d' \
+                   -e '/^$/d' \
+                   "$file"
+            # 如果为IP规则且不包含no-resolve 则添加no-resolve
+            awk '/^IP-/ && !/,no-resolve/ {print $0",no-resolve"; next} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+        
+    # Edit Shadowrocket files
+    - name: Edit Shadowrocket
+      run: |
+        cd Tools-repo/Shadowrocket/Rules
+        for file in *.list; do
+          if [ -f "$file" ]; then
+            file_names=$(basename "$file" .list)
+            line_count=$(wc -l < "$file")
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+    
+###### Stash
+      # 适配 Stash 规则
+    - name: Edit Stash/Rules 
+      run: |
+        cd Tools-repo/Stash/Rules
+        for file in *.yaml *.list; do
+          if [ -f "$file" ]; then
+            sed -i -e 's/, /,/g' \
+                   -e 's/;/# /g' \
+                   -e 's/host,/HOST,/g' \
+                   -e 's/host-/HOST-/g' \
+                   -e 's/-suffix/-SUFFIX/g' \
+                   -e 's/-keyword/-KEYWORD/g' \
+                   -e 's/ip-cidr/IP-CIDR/g' \
+                   -e 's/geoip/GEOIP/g' \
+                   -e 's/HOST,/DOMAIN,/g' \
+                   -e 's/HOST-/DOMAIN-/g' \
+                   -e 's/IP6-CIDR,/IP-CIDR6,/g' \
+                   -e 's/,extended-matching$//g' \
+                   -e 's/,REJECT$//g' \
+                   -e 's/,DIRECT$//g' \
+                   -e 's/,reject$//g' \
+                   -e 's/,direct$//g' \
+                   -e '/\(USER-AGENT\|URL-REGEX\|OR\|AND\|NOT\),/ s/^/#/' \
+                   -e 's| \{1,\}//.*$||' \
+                   -e '/# 更新：/d' \
+                   -e '/# AUTHOR:/d' \
+                   -e '/# REPO:/d' \
+                   -e '/# UPDATED:/d' \
+                   -e '/404: Not Found/d' \
+                   -e '/^\s*[#;]/d' \
+                   -e '/^$/d' \
+                   "$file"
+            # 如果为IP规则且不包含no-resolve 则添加no-resolve
+            awk '/^IP-/ && !/,no-resolve/ {print $0",no-resolve"; next} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+            
+            # 处理 .list 文件
+            if [[ "$file" == *.list ]]; then
+              file_names=$(basename "$file" .list)
+              line_count=$(wc -l < "$file")
+              awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+              awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+              sed -i '2a\\' "$file"
+            fi
+          else
+            echo "$file not found."
+          fi
+        done
+        
+    # Edit Stash files
+    - name: Edit Stash
+      run: |
+        cd Tools-repo/Stash/Rules
+        for file in *CIDR*.yaml; do
+          if [ -f "$file" ]; then
+            sed -i -e 's/^IP-CIDR,//' "$file"
+            sed -i -e 's/^IP-CIDR6,//' "$file"
+            awk '{print "\x27" $0 "\x27"}' "$file" > tmpfile && mv tmpfile "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        # 处理 .yaml 文件
+        for file in *.yaml; do
+          if [ -f "$file" ]; then
+            awk '{print "  - " $0}' "$file" > tmpfile && mv tmpfile "$file"
+            file_names=$(basename "$file" .yaml)
+            line_count=$(wc -l < "$file")
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+            sed -i '3apayload:' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+###### Sing-box
+      # 适配 Sing-box 规则
+    - name: Edit Sing-box/Rules
+      run: |
+       # 安装 Sing-box
+       curl -Lo sing-box.tar.gz https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz
+       tar -xzf sing-box.tar.gz
+       chmod +x sing-box-${SING_BOX_VERSION}-linux-amd64/sing-box
+       sudo mv sing-box-${SING_BOX_VERSION}-linux-amd64/sing-box /usr/local/bin/sing-box
+       sing-box version
+
+       # 开始处理 JSON
+       for file in Tools-repo/Sing-box/Rules/*.json; do
+         if [ -f "$file" ]; then
+           # 去除规则中的空格，尤其是 IP-CIDR 前面的空格
+           sed -i 's/"IP-CIDR": " \+/\"IP-CIDR\": \"/g' "$file"
+           temp_file=$(mktemp)     # 创建临时文件存储 JSON 内容
+           echo '{' > "$temp_file" # 初始化 JSON 结构
+           echo '  "version": 1,' >> "$temp_file"
+           echo '  "rules": [' >> "$temp_file"
+
+           # 定义规则映射
+           declare -A rules_map=(
+             ["DOMAIN-SUFFIX"]="domain_suffix"
+             ["HOST-SUFFIX"]="domain_suffix"
+             ["DOMAIN"]="domain"
+             ["HOST"]="domain"
+             ["host"]="domain"
+             ["DOMAIN-KEYWORD"]="domain_keyword"
+             ["HOST-KEYWORD"]="domain_keyword"
+             ["host-keyword"]="domain_keyword"
+             ["IP-CIDR"]="ip_cidr"
+             ["ip-cidr"]="ip_cidr"
+             ["IP-CIDR6"]="ip_cidr"
+             ["IP6-CIDR"]="ip_cidr"
+             ["SRC-IP-CIDR"]="source_ip_cidr"
+             ["GEOIP"]="geoip"
+             ["DST-PORT"]="port"
+             ["SRC-PORT"]="source_port"
+             ["URL-REGEX"]="domain_regex"
+             ["DOMAIN-REGEX"]="domain_regex"
+           )
+
+           # 遍历规则类型
+           for rule_type in "${!rules_map[@]}"; do
+             rule_key="${rules_map[$rule_type]}"
+             values=$(grep -E "^${rule_type}," "$file" | cut -d, -f2)
+
+             if [ -n "$values" ]; then
+               value_array=$(echo "$values" | jq -R . | jq -s .)
+               echo '    {' >> "$temp_file"
+               echo "      \"$rule_key\": [" >> "$temp_file"
+               echo "$value_array" | jq -r '.[]' | sed 's/^/        "/;s/$/",/' >> "$temp_file"
+                sed -i '$ s/,$//' "$temp_file"  # 去除最后一个逗号
+               echo '      ]' >> "$temp_file"
+               echo '    },' >> "$temp_file"
+             fi
+           done
+
+           # 移除最后多余逗号并关闭 JSON 结构
+           sed -i '$ s/,$//' "$temp_file"
+           echo '  ]' >> "$temp_file"
+           echo '}' >> "$temp_file"
+
+           # 将临时文件内容覆盖到原始文件
+           mv "$temp_file" "$file"
+
+           # 编译 JSON 文件为 SRS 并删除不需要的
+           sing-box rule-set compile "$file" -o "${file%.json}.srs"
+           rm -rf sing-box sing-box-${SING_BOX_VERSION}-linux-amd64 sing-box.tar.gz
+         else
+           echo "$file not found."
+         fi
+       done
+
+###### Clash
+      # 适配 Clash 规则
+    - name: Edit Clash/Rules
+      run: |
+        cd Tools-repo/Clash/Rules
+        for file in *.yaml *.list; do
+          if [ -f "$file" ]; then
+            sed -i -e 's/, /,/g' \
+                   -e 's/;/# /g' \
+                   -e 's/host,/HOST,/g' \
+                   -e 's/host-/HOST-/g' \
+                   -e 's/-suffix/-SUFFIX/g' \
+                   -e 's/-keyword/-KEYWORD/g' \
+                   -e 's/ip-cidr/IP-CIDR/g' \
+                   -e 's/geoip/GEOIP/g' \
+                   -e 's/HOST,/DOMAIN,/g' \
+                   -e 's/HOST-/DOMAIN-/g' \
+                   -e 's/IP6-CIDR,/IP-CIDR6,/g' \
+                   -e 's/,REJECT$//g' \
+                   -e 's/,DIRECT$//g' \
+                   -e 's/,reject$//g' \
+                   -e 's/,direct$//g' \
+                   -e 's/,extended-matching$//g' \
+                   -e '/\(OR\|AND\|NOT\|USER-AGENT\|URL-REGEX\|IP-ASN\),/ s/^/#/' \
+                   -e '/# 内容：/d' \
+                   -e '/# 数量：/d' \
+                   -e '/# 更新：/d' \
+                   -e '/# NAME:/d' \
+                   -e '/# AUTHOR:/d' \
+                   -e '/# REPO:/d' \
+                   -e '/# UPDATED:/d' \
+                   -e '/404: Not Found/d' \
+                   -e '/^\s*[#;]/d' \
+                   -e '/^$/d' \
+                   "$file"
+            # 如果为IP规则且不包含no-resolve 则添加no-resolve
+            awk '/^IP-/ && !/,no-resolve/ {print $0",no-resolve"; next} {print}' "$file" > tmpfile
+            mv tmpfile "$file"
+
+            # 处理 .list 文件
+            if [[ "$file" == *.list ]]; then
+              file_names=$(basename "$file" .list)
+              line_count=$(wc -l < "$file")
+              awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+              awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+              sed -i '2a\\' "$file"
+            fi
+          else
+            echo "$file not found."
+          fi
+        done
+        
+    # Edit Clash files
+    - name: Edit Clash
+      run: |
+        cd Tools-repo/Clash/Rules
+        for file in *.yaml; do
+          if [ -f "$file" ]; then
+            sed -i -e 's/^IP-CIDR,//' "$file"
+            sed -i -e 's/^IP-CIDR6,//' "$file"
+            awk '{print "\x27" $0 "\x27"}' "$file" > tmpfile && mv tmpfile "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+
+        # 处理 .yaml 文件
+        for file in *.yaml; do
+          if [ -f "$file" ]; then
+            awk '{print "  - " $0}' "$file" > tmpfile && mv tmpfile "$file"
+            file_names=$(basename "$file" .yaml)
+            line_count=$(wc -l < "$file")
+            awk -v fname="$file_names" 'NR==1 {print "# 规则名称: " fname} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            awk -v count="$line_count" 'NR==2 {print "# 规则统计: " count} {print}' "$file" > tmpfile && mv tmpfile "$file"
+            sed -i '2a\\' "$file"
+            sed -i '3apayload:' "$file"
+          else
+            echo "$file not found."
+          fi
+        done
+       
+    # 添加并提交更改
+    - name: Add and Commits
+      run: |
+        cd Tools-repo
+        if [[ -n $(git status -s) ]]; then
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "Auto Update $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M')"
+          git pull --rebase origin X
+          git push origin X  
+        else
+          echo "No changes to commit."
+        fi
+        
+    # 清理工作流
+    - name: Cleanup Workflow
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+        retain_days: 0
+        keep_minimum_runs: 2

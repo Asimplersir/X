@@ -1,0 +1,14 @@
+name: "广告拦截"
+desc: "去广告规则"
+icon: |-
+   https://raw.githubusercontent.com/Asimplersir/X/X/icon/Advertising.png
+
+rule-providers:
+  Anti-AD_Domain:
+    behavior: domain
+    url: "https://raw.githubusercontent.com/Asimplersir/AdRules/X/Rule/Adrules.txt"
+    format: text
+    interval: 86400
+
+rules:
+  - RULE-SET,Anti-AD_Domain,REJECT
